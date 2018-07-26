@@ -93,6 +93,37 @@
             </script>
 
             <hr>
+            <div>
+                    <input type="checkbox" value="1" name=ch is="my-checkbox-radio"> test
+                <br><input type="checkbox" value="3" name=ch is="my-checkbox-radio"> test1
+                <br><input type="checkbox" value="2" name=ch is="my-checkbox-radio"> test2
+                <br><input type="checkbox" value="4" name=ch is="my-checkbox-radio"> test3
+                <!---
+                    grouped items have to use this approach to display warnings
+                    --->
+                <my-msg-validate target-name="ch"> </my-msg-validate>
+                <script>
+                    elsEach(document.getElementsByName("ch"),function(el,index,list){
+                        el.getValidation().pushAll(["required"],["minLen",{len:2}])
+                    })
+                </script>
+            </div>
+
+            <hr>
+            <div>
+                <select id="mysel" name="mysel" is="my-select" multiple>
+                    <option value="1">test</option>
+                    <option value="2">test2</option>
+                    <option value="3">test3</option>
+                </select>
+                <script>
+                    var myselid = document.getElementById("mysel");
+                    var mysel = document.getElementsByName("mysel");
+                    elsEach(mysel,function(el,index,list){
+                        el.getValidation().pushAll(["required"],["minLen",{len:2}])
+                    })
+                </script>
+            </div>
         </div>
 
         <script>

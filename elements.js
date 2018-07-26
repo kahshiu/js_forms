@@ -759,7 +759,7 @@ xtags["my-textbox"] = xtag.register("my-textbox",{
         },500)
     }
 })
-xtags["my-radio-checkbox"] = xtag.register("my-radio-checkbox",{
+xtags["my-checkbox-radio"] = xtag.register("my-checkbox-radio",{
     extends:"input",
     lifecycle:{
         created: function () { 
@@ -848,7 +848,6 @@ xtags["my-radio-checkbox"] = xtag.register("my-radio-checkbox",{
             } else if(this.type==="radio") {
                 this.setValue(ev.target.value);
             }
-            el.validate();
         }
     }
 })
@@ -881,6 +880,7 @@ xtags["my-select"] = xtag.register("my-select",{
                     ,function(el,index){ el.dataString = targetVal; }
                 )
             }
+            this.validate();
             return temp;
         },
         getValue: function (filter) {
@@ -933,7 +933,6 @@ xtags["my-select"] = xtag.register("my-select",{
             var el = ev.target;
             var list = this.getValue().join(",");
             this.setValue(list);
-            el.validate();
         }
     }
 })
