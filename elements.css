@@ -1,0 +1,50 @@
+.hide {
+    ;display: none
+}
+my-calendar {
+    ;position:fixed
+    ;left:100
+    ;top:100
+    ;padding: 0.8rem
+    ;border-radius: 0.8rem
+    ;background-color:#ccc
+}
+my-calendar {
+    ;font-family: "Lucida Console",Monaco,monospace
+}
+my-calendar .indicator {
+    ;width: 28rem
+    ;padding: 0.4rem
+    ;font-size: 1.2rem
+}
+my-calendar .indicator>div {
+    ;display: inline-block
+    ;width: 28%
+    ;text-align: center
+}
+my-calendar .indicator input {
+}
+my-calendar .indicator .selected
+,my-calendar .indicator .today {
+    ;width: 25%
+}
+my-calendar table {
+    ;width: 100%
+}
+my-calendar td {
+    ;padding: 0.6rem 0.6rem
+    ;border-radius: 0.4rem
+    ;text-align: center
+}
+my-calendar td.today {
+    ;background-color: #666
+    ;color: #eee
+}
+my-calendar td.selected {
+    ;background-color: darkred
+    ;color: #eee
+}
+my-calendar td.mprev, td.mnext {
+    ;background-color: #aaa
+    ;color: #eee
+}

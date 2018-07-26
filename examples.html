@@ -1,0 +1,131 @@
+<html>
+    <head>
+        <!--- dependency is sequence sensitive --->
+        <script src="util.js"></script>
+        <script src="signals.min.js"></script>
+        <script src="forms.js"></script>
+        <script src="core.js"></script>
+        <script src="elements.js"></script>
+    </head>
+    <body>
+        <form action="" id="ff">
+        <div>
+            text1
+            <input type="text" name="t1">
+        </div>
+
+        <div>
+            text2
+            <input type="text" name="t2">
+            <input type="text" name="t2">
+            <input type="text" name="t2">
+        </div>
+
+        <div>
+            text3
+            <textarea name="ta1"> </textarea>
+        </div>
+
+        <div>
+            <select id="" name="sel">
+                <option value="1">a</option>
+                <option value="2">a</option>
+                <option value="3">c</option>
+                <option value="4">d</option>
+                <option value="5">e</option>
+            </select>
+        </div>
+
+        <div>
+            <select id="" name="sel2" multiple>
+                <option value="1">a</option>
+                <option value="2">a</option>
+                <option value="3">c</option>
+                <option value="4">d</option>
+                <option value="5">e</option>
+            </select>
+        </div>
+
+        <div>
+            radio
+            <input type="radio" name="r">
+            <input type="radio" name="r">
+            <input type="radio" name="r">
+        </div>
+
+        <div>
+            checkbox
+            <input type="checkbox" name="cb">
+            <input type="checkbox" name="cb">
+            <input type="checkbox" name="cb">
+        </div>
+        </form>
+
+        <hr>
+        <div> form validation </div>
+        <div> form formatting: date, money, ic, phone 
+            <!--- note: shortfall of <my-msg-validate>, its sensitive to rendering order 
+                for auto rendering, elements of target-name has to already exist, else will throw error
+                <my-msg-validate id="vpre" target-name="fdate,fmoney,fmoney2" hook-type="manual"> </my-msg-validate>
+            --->
+            <table>
+            <tr><td>text </td><td><input type="text" is="my-textbox" data-type="text"  id="ftext"   name="ftext"  >  <td><tr>
+            <tr><td>date </td><td><input type="text" is="my-textbox" data-type="date"  id="fdate"   name="fdate"  >  <td><tr>
+            <tr><td>money</td><td><input type="text" is="my-textbox" data-type="money" id="fmoney"  name="fmoney" >  <td><tr>
+            <tr><td>money</td><td><input type="text" is="my-textbox" data-type="money" id="fmoney2" name="fmoney2">  <td><tr>
+            <tr><td>ic   </td><td><input type="text" is="my-textbox" data-type="ic"    id="fic"     name="fic"    >  <td><tr>
+            <tr><td>phone</td><td><input type="text" is="my-textbox" data-type="phone" id="fphone"  name="fphone" >  <td><tr>
+            </table>
+            Note: An aggregated validation message
+            <my-msg-validate id="vpost" target-name="fic,fphone" hook-type="auto"> </my-msg-validate>
+            <script>
+                // each control attaches to one msg-validate, once line below is released, vpre will show message
+                // document.getElementById("vpre").hookTargets()
+            </script>
+            <hr>
+            <my-msg id="msg"> </my-msg>
+            <script>
+                document.getElementById("msg").printArray([1,2,3],function(d,index,list){
+                    var e = this.getChild();
+                    e.innerHTML = d+"|hello";
+                    this.appendChild(e);
+                })
+            </script>
+
+            <hr>
+        </div>
+
+        <script>
+var t1_val = getValueByName("t1");
+var t2_val = getValueByName("t2");
+var  r_val = getValueByName("r") ;
+var cb_val = getValueByName("cb");
+var sel    = getValueByName("sel");
+var sel2   = getValueByName("sel2");
+var ta1    = getValueByName("ta1");
+
+console.log(
+     t1_val
+     ,t2_val
+     , r_val
+     ,cb_val
+     ,sel   
+     ,sel2  
+     ,ta1   
+)
+console.log(
+    getValuesByForm(document.getElementById("ff"))
+)
+
+var ftext  = document.getElementById("ftext")
+var fdate  = document.getElementById("fdate")
+var fmoney = document.getElementById("fmoney")
+
+// NOTE: sequence sensitivity, make sure "required" is first
+ftext.getValidation().pushAll(["required"],["minLen",{len:3}])
+
+// [fnRule,fnMsg,fnParams,fnFilter] ==> add OR 
+// [rulename    ,fnParams,fnFilter] ==> addPreset
+        </script>
+    </body>
+</html>

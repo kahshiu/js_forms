@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>forms.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="forms.html">
+                  forms.js
+                </a>
+              
+                
+                <a class="source" href="util.html">
+                  util.js
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>forms.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <h3 id="form-element-manipulators">form element manipulators</h3>
+<p>@return (string): pseudo key for grouping elements (element.type)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">writeKey</span> (<span class="hljs-params">el</span>) </span>{
+    <span class="hljs-keyword">var</span> tag      = el.tagName.toLowerCase();
+    <span class="hljs-keyword">var</span> type     = (tag === <span class="hljs-string">"input"</span>? el.type: <span class="hljs-string">""</span>);
+    <span class="hljs-keyword">var</span> multiple = (tag === <span class="hljs-string">"select"</span> &amp;&amp; el.multiple? <span class="hljs-string">"multiple"</span>: <span class="hljs-string">""</span>);
+
+    <span class="hljs-keyword">var</span> k = [tag];
+    <span class="hljs-keyword">if</span>(type.length&gt;<span class="hljs-number">0</span>)     k.push(type);
+    <span class="hljs-keyword">if</span>(multiple.length&gt;<span class="hljs-number">0</span>) k.push(multiple);
+    <span class="hljs-keyword">return</span> k.join(<span class="hljs-string">"."</span>); 
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>@return (string): pseudo key for grouping elements (name)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">writeName</span> (<span class="hljs-params">el</span>) </span>{
+    <span class="hljs-keyword">var</span> name = el.name || <span class="hljs-string">"base"</span>;
+    <span class="hljs-keyword">return</span> name;
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>@return (string): pseudo key base (element.type.name)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">writeNameKey</span> (<span class="hljs-params">el</span>) </span>{
+    <span class="hljs-keyword">return</span> writeName(el)+<span class="hljs-string">"."</span>+writeKey(el);
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>filter input elements from form</p>
+<pre><code>@name: elFilterInputs
+@params (htmlelement): form element input</code></pre>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">elFilterInputs</span> (<span class="hljs-params">formEl</span>) </span>{
+    formEl = formEl || <span class="hljs-built_in">document</span>;
+    <span class="hljs-keyword">var</span> selector = [
+        <span class="hljs-string">'textarea'</span>
+        ,<span class="hljs-string">'select'</span>
+        ,<span class="hljs-string">'input[type=text]'</span>
+        ,<span class="hljs-string">'input[type=hidden]'</span>
+        ,<span class="hljs-string">'input[type=password]'</span>
+        ,<span class="hljs-string">'input[type=radio]'</span>
+        ,<span class="hljs-string">'input[type=checkbox]'</span>
+    ]
+    <span class="hljs-keyword">var</span> nodelist = formEl.querySelectorAll(selector.join(<span class="hljs-string">","</span>));
+    <span class="hljs-keyword">return</span> nodelist;
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>helper function: for validation function, extracts values into result</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">elsMapExtractor</span> (<span class="hljs-params">els,fn,result</span>) </span>{
+    <span class="hljs-keyword">var</span> result = result || [];
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> i=<span class="hljs-number">0</span>; i&lt;els.length; i++) {
+        <span class="hljs-keyword">var</span> el = els[i];
+        <span class="hljs-keyword">if</span>( fn(el,result) ) <span class="hljs-keyword">break</span>;
+    }
+    <span class="hljs-keyword">return</span> result;
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>helper function: apply fnApply to targetname’s subgroups (eg. input.checkbox, input.radiobox, input.textbox) when fulfils targetgroup</p>
+<pre><code>@params targetname (string): name <span class="hljs-keyword">of</span> targeted form element
+@params targetgroup (string): <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">array of elements, key</span>)
+@<span class="hljs-title">params</span> <span class="hljs-title">fnApply</span> (<span class="hljs-params">string</span>): <span class="hljs-title">function</span>(<span class="hljs-params">element, key, array of elements</span>)</span></code></pre>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">applyEachGroup</span>(<span class="hljs-params">targetname,targetgroup,fnApply</span>) </span>{
+    targetgroup = targetgroup || <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;}
+    <span class="hljs-keyword">if</span>(targetname) {
+        <span class="hljs-keyword">var</span> g = elsGroup(<span class="hljs-built_in">document</span>.getElementsByName(targetname),writeKey);
+        <span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> k <span class="hljs-keyword">in</span> g) {
+            <span class="hljs-keyword">if</span>(targetgroup.call(<span class="hljs-keyword">this</span>,g[k],k)) elsEach(g[k],fnApply,<span class="hljs-keyword">this</span>);
+        }
+    }
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <h3 id="a-breakdown-of-api-for-getting-setting-inputs">A breakdown of api for getting/ setting inputs</h3>
+<p>getting/ setting grouped interfaces
+@params groups (object): items groupby writekey, or outputs that abide to that key formatting
+@params fnFilter (function): function to filter individual elements</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getValueByGroup</span> (<span class="hljs-params">groups,fnFilter</span>) </span>{
+    <span class="hljs-keyword">var</span> getters = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">type</span>) </span>{
+        <span class="hljs-keyword">var</span> fn = fnFilter || <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">el</span>) </span>{ <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>; };
+        <span class="hljs-keyword">var</span> target;
+        <span class="hljs-keyword">switch</span>(type) {
+        <span class="hljs-keyword">case</span> <span class="hljs-string">"textarea"</span>       : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{ <span class="hljs-keyword">if</span>(fn(el)) vals.push(el.value); }; <span class="hljs-keyword">break</span>; 
+        <span class="hljs-keyword">case</span> <span class="hljs-string">"input.text"</span>     : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{ <span class="hljs-keyword">if</span>(fn(el)) vals.push(el.value); }; <span class="hljs-keyword">break</span>; 
+        <span class="hljs-keyword">case</span> <span class="hljs-string">"input.hidden"</span>   : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{ <span class="hljs-keyword">if</span>(fn(el)) vals.push(el.value); }; <span class="hljs-keyword">break</span>; 
+        <span class="hljs-keyword">case</span> <span class="hljs-string">"input.password"</span> : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{ <span class="hljs-keyword">if</span>(fn(el)) vals.push(el.value); }; <span class="hljs-keyword">break</span>; 
+        <span class="hljs-keyword">case</span> <span class="hljs-string">"input.radio"</span>    : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{ <span class="hljs-keyword">if</span>(fn(el) &amp;&amp; el.checked) vals.push(el.value); <span class="hljs-keyword">return</span> vals.length&gt;<span class="hljs-number">0</span>;}; <span class="hljs-keyword">break</span>; 
+        <span class="hljs-keyword">case</span> <span class="hljs-string">"input.checkbox"</span> : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{ <span class="hljs-keyword">if</span>(fn(el) &amp;&amp; el.checked) vals.push(el.value); }; <span class="hljs-keyword">break</span>; 
+        <span class="hljs-keyword">case</span> <span class="hljs-string">"select"</span>         : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{ <span class="hljs-keyword">if</span>(fn(el) &amp;&amp; el.selected) vals.push(el.value); <span class="hljs-keyword">return</span> vals.length&gt;<span class="hljs-number">0</span>;}; <span class="hljs-keyword">break</span>; 
+        <span class="hljs-keyword">case</span> <span class="hljs-string">"select.multiple"</span>: target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{ <span class="hljs-keyword">if</span>(fn(el) &amp;&amp; el.selected) vals.push(el.value); }; <span class="hljs-keyword">break</span>; 
+        <span class="hljs-keyword">case</span> <span class="hljs-string">"input.reset"</span>    : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{}; <span class="hljs-keyword">break</span>; 
+        <span class="hljs-keyword">case</span> <span class="hljs-string">"input.submit"</span>   : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{}; <span class="hljs-keyword">break</span>; 
+        <span class="hljs-keyword">case</span> <span class="hljs-string">"input.button"</span>   : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{}; <span class="hljs-keyword">break</span>; 
+        <span class="hljs-keyword">case</span> <span class="hljs-string">"button"</span>         : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{}; <span class="hljs-keyword">break</span>; 
+        }
+        <span class="hljs-keyword">return</span> target;
+    }; 
+    <span class="hljs-keyword">var</span> result = {};
+    <span class="hljs-keyword">var</span> fnTemp,arrTemp;
+
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> g <span class="hljs-keyword">in</span> groups) {
+        fnTemp = getters(g);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>different handling of select element because its options are targeted</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span>( fnTemp.constructor===<span class="hljs-built_in">Function</span> ) {
+            <span class="hljs-keyword">if</span>(g===<span class="hljs-string">"select"</span> || g===<span class="hljs-string">"select.multiple"</span>) {
+                <span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> i=<span class="hljs-number">0</span>; i&lt;groups[g].length; i++) {
+                    <span class="hljs-keyword">var</span> target = groups[g][i];
+                    arrTemp = elsMapExtractor(target.options, fnTemp);
+                }
+            } <span class="hljs-keyword">else</span> {
+                arrTemp = elsMapExtractor(groups[g], fnTemp);
+            }
+            result[g] = arrTemp;
+        }
+    }
+    <span class="hljs-keyword">return</span> result;
+}
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">setValueByGroup</span> (<span class="hljs-params">values,groups,fnFilter</span>) </span>{
+    <span class="hljs-keyword">var</span> setters = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">type</span>) </span>{
+        <span class="hljs-keyword">var</span> fn = fnFilter || <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">el</span>) </span>{ <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>; };
+        <span class="hljs-keyword">var</span> target;
+        <span class="hljs-keyword">switch</span>(type) {
+            <span class="hljs-keyword">case</span> <span class="hljs-string">"textarea"</span>       : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{ <span class="hljs-keyword">var</span> val = vals.shift(); <span class="hljs-keyword">if</span>(val &amp;&amp; fn(el)) el.value = val; }; <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">"input.text"</span>     : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{ <span class="hljs-keyword">var</span> val = vals.shift(); <span class="hljs-keyword">if</span>(val &amp;&amp; fn(el)) el.value = val; }; <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">"input.hidden"</span>   : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{ <span class="hljs-keyword">var</span> val = vals.shift(); <span class="hljs-keyword">if</span>(val &amp;&amp; fn(el)) el.value = val; }; <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">"input.password"</span> : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{ <span class="hljs-keyword">var</span> val = vals.shift(); <span class="hljs-keyword">if</span>(val &amp;&amp; fn(el)) el.value = val; }; <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">"input.radio"</span>    : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{ <span class="hljs-keyword">var</span> idx = vals.indexOf(el.value); <span class="hljs-keyword">if</span>(idx&gt;<span class="hljs-number">-1</span>){ vals.splice(idx,<span class="hljs-number">1</span>); }; <span class="hljs-keyword">if</span>(fn(el)) el.checked  = idx&gt;<span class="hljs-number">-1</span>; <span class="hljs-keyword">return</span> idx&gt;<span class="hljs-number">-1</span>;}; <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">"input.checkbox"</span> : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{ <span class="hljs-keyword">var</span> idx = vals.indexOf(el.value); <span class="hljs-keyword">if</span>(idx&gt;<span class="hljs-number">-1</span>){ vals.splice(idx,<span class="hljs-number">1</span>); }; <span class="hljs-keyword">if</span>(fn(el)) el.checked  = idx&gt;<span class="hljs-number">-1</span>;}; <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">"select"</span>         : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{ <span class="hljs-keyword">var</span> idx = vals.indexOf(el.value); <span class="hljs-keyword">if</span>(idx&gt;<span class="hljs-number">-1</span>){ vals.splice(idx,<span class="hljs-number">1</span>); }; <span class="hljs-keyword">if</span>(fn(el)) el.selected = idx&gt;<span class="hljs-number">-1</span>; <span class="hljs-keyword">return</span> idx&gt;<span class="hljs-number">-1</span>;}; <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">"select.multiple"</span>: target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{ <span class="hljs-keyword">var</span> idx = vals.indexOf(el.value); <span class="hljs-keyword">if</span>(idx&gt;<span class="hljs-number">-1</span>){ vals.splice(idx,<span class="hljs-number">1</span>); }; <span class="hljs-keyword">if</span>(fn(el)) el.selected = idx&gt;<span class="hljs-number">-1</span>;}; <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">"input.reset"</span>    : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{}; <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">"input.submit"</span>   : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{}; <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">"input.button"</span>   : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{}; <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">"button"</span>         : target = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">el,vals</span>) </span>{}; <span class="hljs-keyword">break</span>;
+        }
+        <span class="hljs-keyword">return</span> target;
+    }; 
+    <span class="hljs-keyword">var</span> result = <span class="hljs-literal">true</span>;
+    <span class="hljs-keyword">var</span> fnTemp,arrTemp;
+
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> g <span class="hljs-keyword">in</span> groups) {
+        fnTemp = setters(g);
+        <span class="hljs-keyword">if</span>( fnTemp.constructor===<span class="hljs-built_in">Function</span> &amp;&amp; values.hasOwnProperty(g) ) {
+            <span class="hljs-keyword">if</span>(g===<span class="hljs-string">"select"</span> || g===<span class="hljs-string">"select.multiple"</span>) {
+                <span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> i=<span class="hljs-number">0</span>; i&lt;groups[g].length; i++) {
+                    <span class="hljs-keyword">var</span> target = groups[g][i];
+                    arrTemp = elsMapExtractor(target.options, fnTemp, values[g].slice(<span class="hljs-number">0</span>));
+                }
+            } <span class="hljs-keyword">else</span> {
+                arrTemp = elsMapExtractor(groups[g], fnTemp, values[g].slice(<span class="hljs-number">0</span>));
+            }
+        }
+        result = result 
+            &amp;&amp; arrTemp.constructor === <span class="hljs-built_in">Array</span> 
+            &amp;&amp; arrTemp.length==<span class="hljs-number">0</span>; 
+    }
+    <span class="hljs-keyword">return</span> result;
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>getter/ setter by nodelist
+objects with only ONE key hoisted out of its object shell</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">simplifyObj</span>(<span class="hljs-params">obj</span>) </span>{
+    <span class="hljs-keyword">var</span> olen = <span class="hljs-built_in">Object</span>.keys(obj);
+    <span class="hljs-keyword">return</span> olen&gt;<span class="hljs-number">1</span>? obj: obj[olen[<span class="hljs-number">0</span>]]; 
+}
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getValueByNodelist</span>(<span class="hljs-params">nodelist,fnFilter,isSimplified</span>) </span>{
+    <span class="hljs-keyword">var</span> temp = nodelist.length&gt;<span class="hljs-number">0</span>? getValueByGroup( elsGroup(nodelist,writeKey), fnFilter ): <span class="hljs-literal">null</span>;
+    isSimplified = isSimplified !== <span class="hljs-literal">undefined</span>? isSimplified: <span class="hljs-literal">true</span>;
+    <span class="hljs-keyword">return</span> isSimplified? simplifyObj(temp): temp;
+}
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">setValueByNodelist</span>(<span class="hljs-params">values,nodelist,fnFilter</span>) </span>{
+    <span class="hljs-keyword">var</span> group, gKey;
+    <span class="hljs-keyword">var</span> temp = {};
+    <span class="hljs-keyword">var</span> result = <span class="hljs-literal">null</span>;
+
+    <span class="hljs-keyword">if</span>(!values || !nodelist) <span class="hljs-keyword">return</span> result;
+
+    group = elsGroup(nodelist,writeKey);
+    gKey = <span class="hljs-built_in">Object</span>.keys(group);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>patching of alternate parameter</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span>(values.constructor===<span class="hljs-built_in">String</span> &amp;&amp; gKey.length==<span class="hljs-number">1</span>) {
+        temp[ gKey[<span class="hljs-number">0</span>] ] = values.split(<span class="hljs-string">","</span>);
+
+    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(values.constructor===<span class="hljs-built_in">Array</span> &amp;&amp; gKey.length==<span class="hljs-number">1</span>) {
+        temp[ gKey[<span class="hljs-number">0</span>] ] = values;
+
+    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(values.constructor===<span class="hljs-built_in">Object</span>){
+        temp = values;
+
+    } <span class="hljs-keyword">else</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>proper error handling</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">throw</span> <span class="hljs-string">"Invalid parameter"</span>
+    }
+
+    result = setValueByGroup(temp,group,fnFilter);
+    <span class="hljs-keyword">return</span> result;
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>getter/ setter by form input name</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getValueByName</span>(<span class="hljs-params">name,fnFilter,isSimplified</span>) </span>{
+    <span class="hljs-keyword">return</span> getValueByNodelist(<span class="hljs-built_in">document</span>.getElementsByName(name),fnFilter,isSimplified);
+}
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">setValueByName</span>(<span class="hljs-params">values,name,fnFilter,isSimplified</span>) </span>{
+    <span class="hljs-keyword">return</span> setValueByNodelist(values,<span class="hljs-built_in">document</span>.getElementsByName(name),fnFilter,isSimplified);
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>getter/ setter by form element</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getValuesByForm</span>(<span class="hljs-params">formEl,fnFilter,isSimplified</span>) </span>{
+    <span class="hljs-keyword">var</span> nodelistGroup = elsGroup( elFilterInputs(formEl),writeName ); 
+    <span class="hljs-keyword">var</span> result = {};
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> n <span class="hljs-keyword">in</span> nodelistGroup) {
+        result[n] = getValueByNodelist(nodelistGroup[n],fnFilter,isSimplified);
+    }
+    <span class="hljs-keyword">return</span> result; 
+}
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">setValuesByForm</span>(<span class="hljs-params">values,formEl,fnFilter</span>) </span>{
+    <span class="hljs-keyword">var</span> nodelistGroup = elsGroup( elFilterInputs(formEl),writeName ); 
+    <span class="hljs-keyword">var</span> temp = {};
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> k <span class="hljs-keyword">in</span> nodelistGroup) {
+        temp[k] = setValueByNodelist(values[k],nodelistGroup[k],fnFilter);
+    }
+    <span class="hljs-keyword">return</span> temp;
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <h3 id="formatting-object">formatting object</h3>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Formatter</span> (<span class="hljs-params">source</span>) </span>{
+    <span class="hljs-keyword">this</span>.source = <span class="hljs-literal">undefined</span>; 
+    <span class="hljs-keyword">this</span>.data = <span class="hljs-literal">undefined</span>;
+    <span class="hljs-keyword">this</span>.datamask = <span class="hljs-literal">undefined</span>;
+    <span class="hljs-keyword">this</span>.datastring = <span class="hljs-literal">undefined</span>;
+    <span class="hljs-keyword">this</span>.isValid = <span class="hljs-literal">true</span>;
+
+    <span class="hljs-keyword">if</span>(source.constructor===<span class="hljs-built_in">String</span>) <span class="hljs-keyword">this</span>.source=source;
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <pre><code>search <span class="hljs-keyword">for</span> <span class="hljs-number">1</span>st matching regex to format source
+@params source (string): source
+@params regex: regex obj
+@params replace: replacement fn <span class="hljs-keyword">for</span> regex terms
+@params etc: will alternate between regex,replace. eg
+@returns (array): array <span class="hljs-keyword">of</span> matched [regex,replace];</code></pre>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Formatter.prototype.formatMatched = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">source<span class="hljs-regexp">/*alternate: regex1,fn1,regex2,fn2*/</span></span>) </span>{
+    <span class="hljs-keyword">var</span> re,fn,matched,result;
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> i=<span class="hljs-number">1</span>;i&lt;<span class="hljs-built_in">arguments</span>.length;i=i+<span class="hljs-number">2</span>) {
+        re = <span class="hljs-built_in">arguments</span>[i+<span class="hljs-number">0</span>];
+        fn = <span class="hljs-built_in">arguments</span>[i+<span class="hljs-number">1</span>];
+
+        matched = re.test(source);
+        <span class="hljs-keyword">if</span>(matched) {
+            result = [];
+            result.push(re,fn);
+            <span class="hljs-keyword">break</span>;
+        }
+    }
+    <span class="hljs-keyword">return</span> result;
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <pre><code>search <span class="hljs-keyword">for</span> <span class="hljs-number">1</span>st matching regex to format source
+@params source (string): source
+@params regex: regex obj
+@params replace: replacement fn <span class="hljs-keyword">for</span> regex terms
+@params etc: will alternate between regex,replace. eg
+@returns (string): formatted text, based on replace</code></pre>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Formatter.prototype.formatText = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">source<span class="hljs-regexp">/*alternate: regex1,fn1,regex2,fn2*/</span></span>) </span>{
+    <span class="hljs-keyword">var</span> re,fn,matched,result;
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> i=<span class="hljs-number">1</span>;i&lt;<span class="hljs-built_in">arguments</span>.length;i=i+<span class="hljs-number">2</span>) {
+        re = <span class="hljs-built_in">arguments</span>[i+<span class="hljs-number">0</span>];
+        fn = <span class="hljs-built_in">arguments</span>[i+<span class="hljs-number">1</span>];
+
+        matched = re.test(source);
+        <span class="hljs-keyword">if</span>(matched) {
+            result = source.replace(re,fn);
+            <span class="hljs-keyword">break</span>;
+        }
+    }
+    <span class="hljs-keyword">return</span> result;
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>source is run through pipeline, value output from each stage is saved </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Formatter.prototype.pipeline = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">datatype</span>) </span>{
+    <span class="hljs-keyword">var</span> sourceTemp=<span class="hljs-keyword">this</span>.source, temp1, temp2, isValidSource;
+
+    <span class="hljs-keyword">if</span>(!Formatter.presets.hasOwnProperty(datatype)) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>stage: sanitise source, sourceTemp saved</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span>(Formatter.presets[datatype][<span class="hljs-string">"sanitiseSource"</span>] &amp;&amp; sourceTemp) {
+        sourceTemp = Formatter.presets[datatype][<span class="hljs-string">"sanitiseSource"</span>](sourceTemp);
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>stage: shorthands expanded, sourceTemp overwritten</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span>(Formatter.presets[datatype][<span class="hljs-string">"abbrevs"</span>] &amp;&amp; sourceTemp) {
+        temp1 = Formatter.presets[datatype][<span class="hljs-string">"abbrevs"</span>].slice(<span class="hljs-number">0</span>);
+        temp1.unshift(sourceTemp);
+        temp2 = <span class="hljs-keyword">this</span>.formatMatched.apply(<span class="hljs-keyword">this</span>,temp1);
+        <span class="hljs-keyword">if</span>(temp2) {
+            temp2.unshift(sourceTemp);
+            sourceTemp = <span class="hljs-keyword">this</span>.formatText.apply(<span class="hljs-keyword">this</span>,temp2);
+        }
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>stage: validate source, this.isValid flagged </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    isValidSource = <span class="hljs-literal">true</span>;
+    <span class="hljs-keyword">if</span>(Formatter.presets[datatype][<span class="hljs-string">"validateSource"</span>]) {
+        isValidSource = Formatter.presets[datatype][<span class="hljs-string">"validateSource"</span>](sourceTemp);
+    }
+    <span class="hljs-keyword">this</span>.isValid = (<span class="hljs-keyword">this</span>.source===<span class="hljs-string">""</span> || isValidSource);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>stage: data conversion, this.data saved</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.data = isValidSource? sourceTemp: <span class="hljs-literal">undefined</span>;
+    <span class="hljs-keyword">if</span>(Formatter.presets[datatype][<span class="hljs-string">"convertData"</span>] &amp;&amp; <span class="hljs-keyword">this</span>.data) {
+        <span class="hljs-keyword">this</span>.data = Formatter.presets[datatype][<span class="hljs-string">"convertData"</span>](<span class="hljs-keyword">this</span>.data,sourceTemp);
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>stage: data string form (for html attribute string storing), this.datastring saved</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.datastring = <span class="hljs-keyword">this</span>.data;
+    <span class="hljs-keyword">if</span>(Formatter.presets[datatype][<span class="hljs-string">"stringifyData"</span>] &amp;&amp; <span class="hljs-keyword">this</span>.data) {
+        <span class="hljs-keyword">this</span>.datastring = Formatter.presets[datatype][<span class="hljs-string">"stringifyData"</span>](<span class="hljs-keyword">this</span>.data,sourceTemp);
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>stage: data masking, this.datamask saved</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.datamask = <span class="hljs-keyword">this</span>.data;
+    <span class="hljs-keyword">if</span>(Formatter.presets[datatype][<span class="hljs-string">"maskData"</span>] &amp;&amp; <span class="hljs-keyword">this</span>.data) {
+        <span class="hljs-keyword">this</span>.datamask = Formatter.presets[datatype][<span class="hljs-string">"maskData"</span>] (<span class="hljs-keyword">this</span>.data,sourceTemp);
+    }
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <h3 id="preset-formats">preset formats</h3>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Formatter.presets = {};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>preset text</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Formatter.presets.text = {
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>preset date text</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Formatter.presets.date = {
+    <span class="hljs-attr">abbrevs</span>: 
+        [<span class="hljs-regexp">/^(\d{2})$/</span>                                ,<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">match,a1,offset,fullstring      </span>)</span>{ <span class="hljs-keyword">var</span> d = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(); a2 = d.getMonth()+<span class="hljs-number">1</span>; a3 = d.getFullYear(); <span class="hljs-keyword">return</span> [pad0(a1,<span class="hljs-number">2</span>),pad0(a2,<span class="hljs-number">2</span>),a3].join(<span class="hljs-string">"/"</span>); }
+        ,/^(\d{<span class="hljs-number">2</span>})[\/\-\s]?(\d{<span class="hljs-number">2</span>})$/                ,<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">match,a1,a2,offset,fullstring   </span>)</span>{ <span class="hljs-keyword">var</span> d = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(); a3 = d.getFullYear();                      <span class="hljs-keyword">return</span> [pad0(a1,<span class="hljs-number">2</span>),pad0(a2,<span class="hljs-number">2</span>),a3].join(<span class="hljs-string">"/"</span>); }
+        ,/^(\d{<span class="hljs-number">2</span>})[\/\-\s]?(\d{<span class="hljs-number">2</span>})[\/\-\s]?(\d{<span class="hljs-number">2</span>})$/,<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">match,a1,a2,a3,offset,fullstring</span>)</span>{ <span class="hljs-keyword">var</span> d = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(); a3 = <span class="hljs-string">"20"</span>+a3.toString();                   <span class="hljs-keyword">return</span> [pad0(a1,<span class="hljs-number">2</span>),pad0(a2,<span class="hljs-number">2</span>),a3].join(<span class="hljs-string">"/"</span>); }
+        ,/^(\d{<span class="hljs-number">2</span>})[\/\-\s]?(\d{<span class="hljs-number">2</span>})[\/\-\s]?(\d{<span class="hljs-number">4</span>})$/,<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">match,a1,a2,a3,offset,fullstring</span>)</span>{ <span class="hljs-keyword">var</span> d = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>();                                            <span class="hljs-keyword">return</span> [pad0(a1,<span class="hljs-number">2</span>),pad0(a2,<span class="hljs-number">2</span>),a3].join(<span class="hljs-string">"/"</span>); }
+        ],
+    <span class="hljs-attr">validateSource</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">source</span>) </span>{
+        <span class="hljs-keyword">var</span> temp, result;
+        result = <span class="hljs-regexp">/^(\d{2})\/(\d{2})\/(\d{4})$/</span>.test(source);
+        <span class="hljs-keyword">if</span>(!result) <span class="hljs-keyword">return</span> result;
+
+        temp = source.split(<span class="hljs-string">"/"</span>);
+        result = isValidDate(temp[<span class="hljs-number">0</span>],temp[<span class="hljs-number">1</span>],temp[<span class="hljs-number">2</span>]);
+        <span class="hljs-keyword">return</span> result;
+    },
+    <span class="hljs-attr">convertData</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data,source</span>) </span>{
+        temp = data.split(<span class="hljs-string">"/"</span>);
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(temp[<span class="hljs-number">2</span>],temp[<span class="hljs-number">1</span>]<span class="hljs-number">-1</span>,temp[<span class="hljs-number">0</span>]); 
+    },
+    <span class="hljs-attr">stringifyData</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data,source</span>) </span>{
+        <span class="hljs-keyword">return</span> data.getTime();
+    },
+    <span class="hljs-attr">maskData</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data,source</span>) </span>{
+        <span class="hljs-keyword">return</span> source; 
+    }
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p>preset money text</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Formatter.presets.money = {
+    <span class="hljs-attr">sanitiseSource</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">source</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>money demasking</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">return</span> source.replace(<span class="hljs-regexp">/[\s\,]/gi</span>,<span class="hljs-string">""</span>);
+    },
+    <span class="hljs-attr">validateSource</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">source</span>) </span>{
+        <span class="hljs-keyword">return</span> <span class="hljs-regexp">/^[1234567890\.]+$/</span>.test(source);
+    },
+    <span class="hljs-attr">convertData</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data,source</span>) </span>{
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Number</span>(data);
+    },
+    <span class="hljs-attr">maskData</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data,source</span>) </span>{
+        <span class="hljs-keyword">var</span> re = <span class="hljs-regexp">/^(\d{0,})?[\.]?(\d{0,})$/</span>;
+        <span class="hljs-keyword">var</span> fn = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">match,a1,a2,offset,fullstring</span>)</span>{ <span class="hljs-keyword">return</span> [moneyDelim(a1? <span class="hljs-built_in">Number</span>(a1): <span class="hljs-number">0</span>),a2? pad0(a2,<span class="hljs-number">2</span>,<span class="hljs-string">"post"</span>):<span class="hljs-string">"00"</span>].join(<span class="hljs-string">"."</span>)};
+        <span class="hljs-keyword">return</span> source.replace(re,fn); 
+    }
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>preset ic text</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Formatter.presets.ic = {
+    <span class="hljs-attr">abbrevs</span>: [ <span class="hljs-regexp">/^(\d{6})[\s\-]?(\d{2})[\s\-]?(\d{4})$/</span>,<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">match,a1,a2,a3,offset,fullstring</span>)</span>{ <span class="hljs-keyword">return</span> [a1,a2,a3].join(<span class="hljs-string">"-"</span>); } 
+    ],
+    <span class="hljs-attr">validateSource</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">source</span>) </span>{
+        <span class="hljs-keyword">var</span> result;
+        result = <span class="hljs-regexp">/^(\d{6})[\s\-](\d{2})[\s\-](\d{4})$/</span>.test(source);
+        <span class="hljs-keyword">return</span> result;
+    },
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <p>preset phone text</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Formatter.presets.phone = {
+    <span class="hljs-attr">abbrevs</span>: [ <span class="hljs-regexp">/^(0[18]\d|0[2345679])[\s\-]?(\d{6,})/</span>,<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">match,a1,a2</span>)</span>{ <span class="hljs-keyword">return</span> [a1,a2].join(<span class="hljs-string">"-"</span>)} 
+    ],
+    <span class="hljs-attr">validateSource</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">source</span>) </span>{
+        <span class="hljs-keyword">var</span> result;
+        result = <span class="hljs-regexp">/^(0[18]\d|0[2345679])[\s\-]?(\d{6,})/</span>.test(source);
+        <span class="hljs-keyword">return</span> result;
+    },
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <h3 id="validation-object">validation object</h3>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Validate</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">this</span>.iargcount=<span class="hljs-number">4</span>
+    <span class="hljs-keyword">this</span>.fns = [];
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <p>validation: add custom rule</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Validate.prototype.add = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">fnRule,fnMsg,fnParams,fnFilter</span>) </span>{
+    fnRule   = fnRule   || <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">value,params</span>) </span>{ <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>; }
+    fnMsg    = fnMsg    || <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">value,params</span>) </span>{ <span class="hljs-keyword">return</span> <span class="hljs-string">"Data failed validation"</span>; }
+    fnFilter = fnFilter || <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">value,params,result</span>) </span>{ <span class="hljs-keyword">return</span> value!==<span class="hljs-keyword">typeof</span> Undefined &amp;&amp; result; }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              <p>number in a set =&gt; this.iargcount </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.fns.push(fnRule,fnMsg,fnParams,fnFilter);
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              <p>validation: add preset rule</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Validate.prototype.addPreset = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">rulename,fnParams,fnFilter</span>) </span>{
+    <span class="hljs-keyword">if</span>( Validate.presets.hasOwnProperty(rulename) ) {
+        <span class="hljs-keyword">this</span>.add(
+            Validate.presets[rulename][<span class="hljs-string">"evaluator"</span>]
+            ,Validate.presets[rulename][<span class="hljs-string">"msg"</span>]
+            ,fnParams || Validate.presets[rulename][<span class="hljs-string">"params"</span>] 
+            ,fnFilter || Validate.presets[rulename][<span class="hljs-string">"filter"</span>]  );
+    }
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
+              <p>validation: add all rules<br>arguments: arrays of signature 
+[fnRule,fnMsg,fnParams,fnFilter] ==&gt; add OR 
+[rulename    ,fnParams,fnFilter] ==&gt; addPreset</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Validate.prototype.addAll = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    elsEach(<span class="hljs-built_in">arguments</span>,<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">arg</span>)</span>{
+        <span class="hljs-keyword">var</span> param1 = arg[<span class="hljs-number">0</span>];
+        <span class="hljs-keyword">if</span>(param1.constructor===<span class="hljs-built_in">String</span>) {
+            <span class="hljs-keyword">this</span>.addPreset.apply(<span class="hljs-keyword">this</span>,arg);
+        } <span class="hljs-keyword">else</span> {
+            <span class="hljs-keyword">this</span>.add.apply(<span class="hljs-keyword">this</span>,arg);
+        }
+    },<span class="hljs-keyword">this</span>)
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              <p>validation: remove validation at specific point</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Validate.prototype.removeAt = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">index</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              <p>note: sequence sensitive</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.fns.splice(index*<span class="hljs-keyword">this</span>.iargcount,<span class="hljs-keyword">this</span>.iargcount).length&gt;<span class="hljs-number">0</span>;
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+              </div>
+              <p>validation: remove all validation rules</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Validate.prototype.removeAll = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">this</span>.fns = [];
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-39">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-39">&#182;</a>
+              </div>
+              <pre><code>base validation evaluator:
+@params context    (obj/ htmlelement): context <span class="hljs-keyword">of</span> element
+@params value      (obj/ htmlelement): value to validate againt
+@params baseResult (obj/ htmlelement): result obj to integrate into</code></pre>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Validate.prototype.eval = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">context,value,baseResult</span>) </span>{
+    <span class="hljs-keyword">var</span> iarg=<span class="hljs-number">0</span>, fnRule, fnMsg, fnFilter, result=baseResult || {<span class="hljs-attr">isValid</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">warnings</span>:[]};
+
+    <span class="hljs-keyword">while</span>( (iarg+<span class="hljs-keyword">this</span>.iargcount)&lt;=<span class="hljs-keyword">this</span>.fns.length ) {
+        fnRule   = <span class="hljs-keyword">this</span>.fns[iarg];
+        fnMsg    = <span class="hljs-keyword">this</span>.fns[iarg+<span class="hljs-number">1</span>];
+        fnParams = <span class="hljs-keyword">this</span>.fns[iarg+<span class="hljs-number">2</span>];
+        fnFilter = <span class="hljs-keyword">this</span>.fns[iarg+<span class="hljs-number">3</span>];
+
+        <span class="hljs-keyword">var</span> params = fnParams? fnParams: {};
+        params = params.constructor===<span class="hljs-built_in">Function</span>? params.call(context,value): params; 
+
+        <span class="hljs-keyword">var</span> flag = fnRule.call(context,value,params);
+        <span class="hljs-keyword">if</span>(fnFilter.call(context,value,params,result.isValid) &amp;&amp; !flag) {
+            result.isValid = result.isValid &amp;&amp; flag;
+            result.warnings.push(fnMsg.call(context,value,params));
+        }
+        iarg=iarg+<span class="hljs-keyword">this</span>.iargcount;
+    }
+    <span class="hljs-keyword">return</span> result;
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-40">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-40">&#182;</a>
+              </div>
+              <p>validation run on html element</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Validate.prototype.evalElement = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">el,value,datatype,baseResult</span>) </span>{
+    <span class="hljs-keyword">var</span> val = value || el.getValue() || el.dataString || el.value;
+
+    <span class="hljs-keyword">var</span> fmt = <span class="hljs-keyword">new</span> Validate()
+    fmt.addAll([<span class="hljs-string">"dataFormat"</span>]);
+    baseResult = fmt.eval(el,val,baseResult);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-41">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-41">&#182;</a>
+              </div>
+              <p>console.log(baseResult.isValid,val,el.value)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+    <span class="hljs-keyword">if</span>(baseResult.isValid) {
+        baseResult = <span class="hljs-keyword">this</span>.eval(el,val,baseResult);
+    }
+
+    <span class="hljs-keyword">return</span> baseResult;
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-42">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-42">&#182;</a>
+              </div>
+              <h3 id="validation-presets">validation presets</h3>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Validate.presets = {};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-43">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-43">&#182;</a>
+              </div>
+              <p>rule: required field</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Validate.presets.required = {
+    <span class="hljs-attr">evaluator</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">value,params</span>) </span>{
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.value.length&gt;<span class="hljs-number">0</span>;
+    },
+    <span class="hljs-attr">msg</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">value,params</span>) </span>{
+        <span class="hljs-keyword">var</span> temp = <span class="hljs-string">"{name} is required."</span>
+                    .replace(<span class="hljs-string">"{name}"</span>,<span class="hljs-keyword">this</span>.name || <span class="hljs-keyword">this</span>.id || <span class="hljs-string">"Item"</span>)
+        <span class="hljs-keyword">return</span> temp;
+    },
+    <span class="hljs-attr">filter</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">value,params,result</span>) </span>{
+        <span class="hljs-keyword">return</span> result &amp;&amp; <span class="hljs-literal">true</span>;
+    }
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-44">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-44">&#182;</a>
+              </div>
+              <p>rule: format data according to input data-type</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Validate.presets.dataFormat = {
+    <span class="hljs-attr">evaluator</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">value,params</span>) </span>{
+        <span class="hljs-keyword">return</span> !(<span class="hljs-keyword">this</span>.hasAttribute(<span class="hljs-string">"data-valid"</span>) &amp;&amp; <span class="hljs-keyword">this</span>.getAttribute(<span class="hljs-string">"data-valid"</span>) === <span class="hljs-string">"false"</span>);
+    }, 
+    <span class="hljs-attr">msg</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">value,params</span>) </span>{
+        dt = <span class="hljs-keyword">this</span>.hasAttribute(<span class="hljs-string">"data-type"</span>) &amp;&amp; <span class="hljs-keyword">this</span>.getAttribute(<span class="hljs-string">"data-type"</span>).length&gt;<span class="hljs-number">0</span>? <span class="hljs-keyword">this</span>.getAttribute(<span class="hljs-string">"data-type"</span>): <span class="hljs-string">"data"</span>;
+        <span class="hljs-keyword">var</span> temp = <span class="hljs-string">"Invalid {datatype} format."</span>
+                    .replace(<span class="hljs-string">"{datatype}"</span>,dt);
+        <span class="hljs-keyword">return</span> temp;
+    },
+    <span class="hljs-attr">filter</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">value,params,result</span>) </span>{
+        <span class="hljs-keyword">return</span> result &amp;&amp; <span class="hljs-literal">true</span>;
+    }
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-45">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-45">&#182;</a>
+              </div>
+              <p>rule: min/ max length, applies to radios (array length)/ checkboxes(array length)/ select(array length)/ textbox (string length)
+params.len: length of array/ length of string</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Validate.presets.minLen = {
+    <span class="hljs-attr">evaluator</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">value,params</span>) </span>{
+        params.len = params.len || <span class="hljs-number">0</span>;
+        <span class="hljs-keyword">return</span> value.length&gt;=params.len; <span class="hljs-comment">//logic to follow that of array.slice</span>
+    },
+    <span class="hljs-attr">msg</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">value,params</span>) </span>{
+        <span class="hljs-keyword">var</span> temp = <span class="hljs-string">"Length of {name} at least {len}."</span>
+                    .replace(<span class="hljs-string">"{name}"</span>,<span class="hljs-keyword">this</span>.name || <span class="hljs-keyword">this</span>.id || <span class="hljs-string">"Item"</span>)
+                    .replace(<span class="hljs-string">"{len}"</span>,params.len);
+        <span class="hljs-keyword">return</span> temp;
+    }
+}
+Validate.presets.maxLen = {
+    <span class="hljs-attr">evaluator</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">value,params</span>) </span>{
+        params.len = params.len || <span class="hljs-number">-1</span>;
+        <span class="hljs-keyword">return</span> params.len == <span class="hljs-number">-1</span> || value.length&lt;params.len; <span class="hljs-comment">//logic to follow that of array.slice</span>
+    }, 
+    <span class="hljs-attr">msg</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">value,params</span>) </span>{
+        <span class="hljs-keyword">var</span> temp = <span class="hljs-string">"Length of {name} must not be more than {len}."</span>
+                    .replace(<span class="hljs-string">"{name}"</span>,<span class="hljs-keyword">this</span>.name || <span class="hljs-keyword">this</span>.id || <span class="hljs-string">"Item"</span>)
+                    .replace(<span class="hljs-string">"{len}"</span>,params.len<span class="hljs-number">-1</span>);
+        <span class="hljs-keyword">return</span> temp;
+    }
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-46">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-46">&#182;</a>
+              </div>
+              <p>rule: min/ max date
+params.target = js Date object
+todo: max date</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Validate.presets.minDate = {
+    <span class="hljs-attr">evaluator</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">value,params</span>) </span>{
+        <span class="hljs-keyword">var</span> result = <span class="hljs-literal">true</span>;
+        <span class="hljs-keyword">if</span>(!params.hasOwnProperty(<span class="hljs-string">"target"</span>)) <span class="hljs-keyword">return</span> result;
+
+        result = (value.constructor===<span class="hljs-built_in">Date</span> &amp;&amp; params.target.constructor===<span class="hljs-built_in">Date</span>)? value.getTime()&gt;params.target.getTime(): <span class="hljs-literal">true</span>;
+        <span class="hljs-keyword">return</span> result;
+    },
+    <span class="hljs-attr">msg</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">value,params</span>) </span>{
+        <span class="hljs-keyword">var</span> temp = <span class="hljs-string">"{name} must be later than {dt}."</span>
+                    .replace(<span class="hljs-string">"{name}"</span>,<span class="hljs-keyword">this</span>.name || <span class="hljs-keyword">this</span>.id || <span class="hljs-string">"Date"</span>)
+                    .replace(<span class="hljs-string">"{dt}"</span>,dateFormat(value));
+        <span class="hljs-keyword">return</span> temp;
+    }
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-47">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-47">&#182;</a>
+              </div>
+              <p>rule: min/ max number (applies to $$ values)
+params.target = js Date object
+todo: max date</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Validate.presets.minNum = {
+    <span class="hljs-attr">evaluator</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">value,params</span>) </span>{
+        params.target = params.target || <span class="hljs-number">0</span>;
+        <span class="hljs-keyword">return</span> value&gt;=params.target;
+    },
+    <span class="hljs-attr">msg</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">value,params</span>) </span>{
+        <span class="hljs-keyword">var</span> temp = <span class="hljs-string">"{name} must be more than {min}."</span>
+                    .replace(<span class="hljs-string">"{name}"</span>,<span class="hljs-keyword">this</span>.name || <span class="hljs-keyword">this</span>.id || <span class="hljs-string">"Number"</span>)
+                    .replace(<span class="hljs-string">"{min}"</span>,params.target);
+        <span class="hljs-keyword">return</span> temp;
+    }
+}</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
