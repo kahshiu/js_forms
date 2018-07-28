@@ -11,7 +11,22 @@
             <input type="button" name="ss" value="modal1" target="m1">
             <input type="button" name="ss" value="modal2" target="m2">
         </div>
-        <my-modal-content id="m1"> This is modal1 </my-modal-content>
+        <my-modal-content id="m1"> 
+            This is modal1 
+            <div> asdfasdf asdfas fasfa </div>
+            <table>
+                <tr>
+                    <td>asfasdf</td>
+                    <td>asfasdf</td>
+                    <td>asfasdf</td>
+                </tr>
+                <tr>
+                    <td>asfasdf</td>
+                    <td>asfasdf</td>
+                    <td>asfasdf</td>
+                </tr>
+            </table>
+        </my-modal-content>
         <my-modal-content id="m2"> This is modal2 </my-modal-content>
         <script>
 document.getElementById("mm").onclick=function(ev){
@@ -160,11 +175,9 @@ jax.fire({}
     ,function(x){console.log("error",x)}
 )
         </script>
-        <!---
         <hr>
         <my-calendar>
         </my-calendar>
-            --->
 
     </body>
 </html>
