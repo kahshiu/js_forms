@@ -471,8 +471,28 @@ Calendar.prototype.setData = function () {
 Calendar.prototype.getData = function () {
     return this.data;
 }
+// alternating date key, value
+function Scroller () {
+    this.currPos = 0;
+    this.items = [];
+    for(var i=0;i<arguments.length;i++) {
+        this.items.push(arguments[i]);
+    }
+}
+Scroller.prototype.scroll = function () {
+    var count = this.items.length/2;
+    this.currPos++;
+    if(this.currPos>=count) {
+        this.currPos=0;
+    }
+}
+Scroller.prototype.getValue = function () {
+    var keyPos = this.currPos*2;
+    var valuePos = (this.currPos*2)+1;
+    return {key:this.items[keyPos], val:this.items[valuePos]}; 
+}
 xtags["my-calendar"] = xtag.register("my-calendar",{
-    content:'<div class="indicator"> <input type="button" value="&laquo;"> <div class="today"> TODAY </div> <div> <span class="yyyy">dd  </span> <span class="mm">dd </span> </div> <div class="selected"> </div> <input type="button" value="&raquo;"> </div> <table> <thead> <tr is="my-data-tr"> </tr> </thead> <tbody is="my-data-tbody"> </tbody> </table>',
+    content:'<div class="indicator"> <input type="button" value="&laquo;"> <div> <span class="yyyy"> </span> <span class="mm"> </span> </div> <div class="scrollkey"> </div> <div class="scrollval"> </div> <input type="button" value="&raquo;"> </div> <table> <thead> <tr is="my-data-tr"> </tr> </thead> <tbody is="my-data-tbody"> </tbody> </table>',
     lifecycle:{
         created: function () { 
             this.init();
@@ -486,6 +506,10 @@ xtags["my-calendar"] = xtag.register("my-calendar",{
             this.xtag.data.dtselected = undefined;
             this.xtag.data.dtnow = new Date();
             this.xtag.data.dtnow.setHours(0,0,0,0);
+            this.xtag.data.scroller = new Scroller(
+                 "today"   ,function(){ return this.xtag.data.dtnow; }
+                ,"selected",function(){ return this.xtag.data.dtselected; } 
+            );
 
             this.xtag.data.cal = new Calendar(new Date(2018,6,30));
             this.xtag.data.cal.setData();
@@ -524,14 +548,16 @@ xtags["my-calendar"] = xtag.register("my-calendar",{
             var inputs = this.getElementsByTagName("input");
             var spans = this.getElementsByTagName("span");
             var divs = this.getElementsByTagName("div");
-            this.xtag.data.elPrev  = inputs[0];
-            this.xtag.data.elNext  = inputs[1];
-            this.xtag.data.elToday = divs[1];
-            this.xtag.data.elmm    = spans[0]
-            this.xtag.data.elyyyy  = spans[1]
-            this.xtag.data.elSelected = divs[3];    
+            this.xtag.data.elPrev     = inputs[0];
+            this.xtag.data.elNext     = inputs[1];
+            this.xtag.data.elDayType  = divs[2];
+            this.xtag.data.elDayValue = divs[3];
+            this.xtag.data.elmm       = spans[0]
+            this.xtag.data.elyyyy     = spans[1]
+            this.xtag.data.elSelected = divs[3];
 
             this.render();
+            this.renderScroller();
         },
         getSelectedDate: function () {
             var result;
@@ -544,13 +570,18 @@ xtags["my-calendar"] = xtag.register("my-calendar",{
             return result;
         },
         setSelectedDate: function (yyyy,mm,dd) {
-            if(!this.xtag.data.dtselected){
-                this.xtag.data.dtselected = new Date();
+            if(yyyy && mm && dd) {
+                if(!this.xtag.data.dtselected){
+                    this.xtag.data.dtselected = new Date();
+                }
+                if(yyyy) this.xtag.data.dtselected.setFullYear(yyyy);
+                if(mm)   this.xtag.data.dtselected.setMonth(mm);
+                if(dd)   this.xtag.data.dtselected.setDate(dd);
+                this.xtag.data.dtselected.setHours(0,0,0,0);
+
+            } else {
+                this.xtag.data.dtselected = undefined;
             }
-            if(yyyy) this.xtag.data.dtselected.setFullYear(yyyy);
-            if(mm)   this.xtag.data.dtselected.setMonth(mm);
-            if(dd)   this.xtag.data.dtselected.setDate(dd);
-            this.xtag.data.dtselected.setHours(0,0,0,0);
         },
         render: function (yyyy,mm,dd) {
             this.renderData(yyyy,mm,dd);
@@ -570,6 +601,13 @@ xtags["my-calendar"] = xtag.register("my-calendar",{
             }
             this.xtag.data.elmm.textContent = d.getStrMonth()
             this.xtag.data.elyyyy.textContent = d.getStrYear()
+
+        },
+        renderScroller: function () {
+            var curr = this.xtag.data.scroller.getValue(); 
+            var dt = curr.val.call(this);
+            this.xtag.data.elDayType.textContent = curr.key.toUpperCase();
+            this.xtag.data.elDayValue.textContent = dt? dateFormat(dt): "";
         },
         layerStyles: function () {
             //layer style classes
@@ -608,49 +646,34 @@ xtags["my-calendar"] = xtag.register("my-calendar",{
         // attrname:{attribute:{}, get: function(val) {}, set: function(val) {}}
     },
     events: {
-        "mouseover": function (ev) {
-            var t = ev.target;
-            if( t===this.xtag.data.elToday ) { 
-                t.textContent = dateFormat(this.xtag.data.dtnow);
-
-            } else if( t===this.xtag.data.elSelected ) { 
-                t.textContent = "Selected"
-            }
-        },
-        "mouseout": function (ev) {
-            var t = ev.target;
-            if( t===this.xtag.data.elToday ) { 
-                t.textContent = "TODAY"
-
-            } else if( t===this.xtag.data.elSelected ) { 
-                t.textContent = dateFormat(this.xtag.data.dtnow);
-            }
-        },
         "click": function (ev) {
             var t = ev.target;
             var tc = ev.currentTarget;
 
-            if( t===this.xtag.data.elPrev      ) { this.xtag.data.cal.dateAdd("mm",-1);this.render(); }
-            else if( t===this.xtag.data.elNext ) { this.xtag.data.cal.dateAdd("mm",1);this.render(); }
-            else if( t===this.xtag.data.elToday ) { 
-                var yyyy = this.xtag.data.dtnow.getFullYear(); 
-                var mm   = this.xtag.data.dtnow.getMonth();    
-                var dd   = this.xtag.data.dtnow.getDate();      
-                this.render(yyyy,mm,dd);
+            if( t===this.xtag.data.elPrev      )     { this.xtag.data.cal.dateAdd("mm",-1);this.render(); }
+            else if( t===this.xtag.data.elNext )     { this.xtag.data.cal.dateAdd("mm",1);this.render(); }
+            else if( t===this.xtag.data.elDayType )  { 
+                this.xtag.data.scroller.scroll(); 
+                this.renderScroller();
 
-            } else if( t===this.xtag.data.elSelected ) { 
-                var temp = this.getSelectedDate();
-                if(temp) {
-                    var yyyy = this.xtag.data.dtselected.getFullYear(); 
-                    var mm   = this.xtag.data.dtselected.getMonth();    
-                    var dd   = this.xtag.data.dtselected.getDate();      
-                    this.render(yyyy,mm,dd);
-                }
+            } else if( t===this.xtag.data.elDayValue ) { 
+                var dt = this.xtag.data.scroller.getValue().val.call(this); 
+                var yyyy = dt.getFullYear(); 
+                var mm   = dt.getMonth();    
+                var dd   = dt.getDate();      
+                this.render(yyyy,mm,dd);
 
             } else if( t.tagName==="TD") {
                 var d = t.getData();
-                this.setSelectedDate(d.yyyy,d.mm,d.dd);
+                if(elHasClassName(t,"selected")) {
+                    this.setSelectedDate();
+                    elRemoveClassName(t,"selected");
+                } else {
+                    this.setSelectedDate(d.yyyy,d.mm,d.dd);
+                    elAppendClassName(t,"selected");
+                }
                 this.render();
+                this.renderScroller();
                 
                 xtag.fireEvent(this,"dtselected",{
                     selected: this.xtag.data.dtselected
