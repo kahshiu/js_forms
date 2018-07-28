@@ -34,6 +34,7 @@
                 <option value="4">d</option>
                 <option value="5">e</option>
             </select>
+            <input type="text" name="sel">
         </div>
 
         <div>
@@ -68,14 +69,16 @@
                 for auto rendering, elements of target-name has to already exist, else will throw error
                 <my-msg-validate id="vpre" target-name="fdate,fmoney,fmoney2" hook-type="manual"> </my-msg-validate>
             --->
-            <table>
-            <tr><td>text </td><td><input type="text" is="my-textbox" data-type="text"  id="ftext"   name="ftext"  >  <td><tr>
-            <tr><td>date </td><td><input type="text" is="my-textbox" data-type="date"  id="fdate"   name="fdate"  >  <td><tr>
-            <tr><td>money</td><td><input type="text" is="my-textbox" data-type="money" id="fmoney"  name="fmoney" >  <td><tr>
-            <tr><td>money</td><td><input type="text" is="my-textbox" data-type="money" id="fmoney2" name="fmoney2">  <td><tr>
-            <tr><td>ic   </td><td><input type="text" is="my-textbox" data-type="ic"    id="fic"     name="fic"    >  <td><tr>
-            <tr><td>phone</td><td><input type="text" is="my-textbox" data-type="phone" id="fphone"  name="fphone" >  <td><tr>
-            </table>
+            <form id="ff2" action="">
+                <table>
+                <tr><td>text </td><td><input type="text" is="my-textbox" data-type="text"  id="ftext"   name="ftext"  >  <td><tr>
+                <tr><td>date </td><td><input type="text" is="my-textbox" data-type="date"  id="fdate"   name="fdate"  >  <td><tr>
+                <tr><td>money</td><td><input type="text" is="my-textbox" data-type="money" id="fmoney"  name="fmoney" >  <td><tr>
+                <tr><td>money</td><td><input type="text" is="my-textbox" data-type="money" id="fmoney2" name="fmoney2">  <td><tr>
+                <tr><td>ic   </td><td><input type="text" is="my-textbox" data-type="ic"    id="fic"     name="fic"    >  <td><tr>
+                <tr><td>phone</td><td><input type="text" is="my-textbox" data-type="phone" id="fphone"  name="fphone" >  <td><tr>
+                </table>
+            </form>
             Note: An aggregated validation message
             <my-msg-validate id="vpost" target-name="fic,fphone" hook-type="auto"> </my-msg-validate>
             <script>
@@ -85,10 +88,8 @@
             <hr>
             <my-msg id="msg"> </my-msg>
             <script>
-                document.getElementById("msg").printArray([1,2,3],function(d,index,list){
-                    var e = this.getChild();
-                    e.innerHTML = d+"|hello";
-                    this.appendChild(e);
+                document.getElementById("msg").printArray([1,2,3],function(el,d){
+                    el.innerHTML = d+"|hello";
                 })
             </script>
 
@@ -157,6 +158,9 @@ ftext.getValidation().pushAll(["required"],["minLen",{len:3}])
 
 // [fnRule,fnMsg,fnParams,fnFilter] ==> add OR 
 // [rulename    ,fnParams,fnFilter] ==> addPreset
+
+validateByForm(document.getElementById("ff2"));
+
         </script>
     </body>
 </html>

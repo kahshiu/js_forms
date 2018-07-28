@@ -160,7 +160,7 @@ function debounce(func, wait, immediate) {
 	};
 }
 // simplified ajax call
-function ajax(config,handler) {
+function ajax(config,handler,timeout) {
     config = config || {};
     config.method = config.method || "GET";
     config.action = config.action || "";
@@ -173,6 +173,8 @@ function ajax(config,handler) {
     handler["processing" ] = handler.hasOwnProperty("processing" )? handler["processing" ]: function (xhttp) {console.log(3,"remote server processing") }
     handler["success"    ] = handler.hasOwnProperty("success"    )? handler["success"    ]: function (xhttp) {console.log(4,xhttp.status,"success",xhttp.responseText)}
     handler["error"      ] = handler.hasOwnProperty("error"      )? handler["error"      ]: function (xhttp) {console.log(4,xhttp.status,"error")}
+
+    timeout = timeout || 5000;
 
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function (evt) {
@@ -187,21 +189,20 @@ function ajax(config,handler) {
         }
     };
     var url,data,result = false;
-    if(config.action.length>0) {
-        if(config.method=="GET") {
-            url = config.action + "?" + stringifyObj(config.params);
-            data = null;
-            xhttp.open(config.method,url,true);
-            xhttp.send(data);
-            result = true;
-        } else if(config.method=="POST") {
-            url = config.action + "?";
-            data = stringifyObj(config.params);
-            xhttp.open(config.method,url,true);
-            xhttp.send(data);
-            result = true;
-        }
+    if(config.action.length==0) return result;
+
+    if(config.method=="GET") {
+        url = config.action + "?" + stringifyObj(config.params);
+        data = null;
+    } else if(config.method=="POST") {
+        url = config.action + "?";
+        data = stringifyObj(config.params);
     }
+
+    xhttp.open(config.method,url,true);
+    xhttp.timeout = timeout;
+    xhttp.send(data);
+    result = true;
     return result;
 }
 

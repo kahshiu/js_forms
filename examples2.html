@@ -130,9 +130,41 @@ document.getElementById("mm").onclick=function(ev){
             });
         </script>
 
+        <my-msg-loop id="loop">
+        </my-msg-loop>
+        <script>
+var items = [];
+var count = 0;
+
+//var loop = document.getElementById("loop");
+//loop.startLoop(
+//    1000
+//    ,function(){
+//        items.push(count++);
+//        if(count>20) {
+//            this.stopLoop();
+//        }
+//        return items;
+//    }
+//    ,loop
+//)
+        </script>
+
+        <hr>
+        <my-ajax method="GET" action="http://localhost/test" id="jax">
+        </my-ajax>
+        <script>
+var jax = document.getElementById("jax");
+jax.fire({}
+    ,function(x){console.log("success",x)}
+    ,function(x){console.log("error",x)}
+)
+        </script>
+        <!---
         <hr>
         <my-calendar>
         </my-calendar>
+            --->
 
     </body>
 </html>

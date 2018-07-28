@@ -693,6 +693,7 @@ xtags["my-textbox"] = xtag.register("my-textbox",{
             this.value      = f.datamask || f.source || "";
 
             this.validate();
+            return this.getValue();
         },
         getValue: function () {
             return this.xtag.data.converted;
@@ -727,6 +728,7 @@ xtags["my-textbox"] = xtag.register("my-textbox",{
             // dispatch items
             this.xtag.data.svalidated.dispatch(temp);
             xtag.fireEvent(this, 'validate', {detail: temp});
+            return temp;
         },
         onValidated: function (fn) {
             this.xtag.data.svalidated.add(fn,this);
@@ -777,23 +779,20 @@ xtags["my-checkbox-radio"] = xtag.register("my-checkbox-radio",{
             this.xtag.data.validation = undefined;
         },
         setValue: function(source,filter) {
-            var temp = false;
-            if(this.name) { 
-                temp = true;
+            var targetVal = this.getValue(filter);
+            if(targetVal) { 
                 setValueByName(source,this.name,filter); 
-
-                targetVal = this.getValue().join(",");
                 applyEachGroup.call(this
                     ,this.name
                     ,function(g,k){ return k == writeKey(this); }
-                    ,function(el,index){ el.dataString = targetVal; }
+                    ,function(el,index){ el.dataString = targetVal.join(","); }
                 )
             }
             this.validate();
-            return temp;
+            return targetVal;
         },
         getValue: function (filter) {
-            var temp = this.name? getValueByName(this.name,filter): temp;
+            var temp = this.name? getValueByName(this.name,filter): undefined;
             return temp;
         },
         setWarningEl: function (el) {
@@ -824,6 +823,7 @@ xtags["my-checkbox-radio"] = xtag.register("my-checkbox-radio",{
 
             this.xtag.data.svalidated.dispatch(temp);
             xtag.fireEvent(this, 'validate', {detail: temp});
+            return temp;
         },
         onValidated: function (fn) {
             this.xtag.data.svalidated.add(fn,this);
@@ -832,10 +832,6 @@ xtags["my-checkbox-radio"] = xtag.register("my-checkbox-radio",{
     accessors: {
         // attrname:{attribute:{}, get: function(val) {}, set: function(val) {}}
         dataString:{attribute:{}, },
-        dataType:{attribute:{}, get: function() {
-            var temp = this.getAttribute("data-type");
-            return temp? temp: "text";
-        }}
     },
     events: {
         "change": function(ev){
@@ -868,23 +864,21 @@ xtags["my-select"] = xtag.register("my-select",{
             this.xtag.data.validation = undefined;
         },
         setValue: function(source,filter) {
-            var temp = false;
-            if(this.name) { 
+            var targetVal = this.getValue(filter)
+            if(targetVal) { 
                 temp = true;
                 setValueByName(source,this.name,filter); 
-
-                targetVal = this.getValue(filter).join(",");
                 applyEachGroup.call(this
                     ,this.name
                     ,function(g,k){ return k == writeKey(this); }
-                    ,function(el,index){ el.dataString = targetVal; }
+                    ,function(el,index){ el.dataString = targetVal.join(","); }
                 )
             }
             this.validate();
             return temp;
         },
         getValue: function (filter) {
-            var temp = this.name? getValueByName(this.name,filter): temp;
+            var temp = this.name? getValueByName(this.name,filter): undefined;
             return temp;
         },
         setWarningEl: function (el) {
@@ -915,6 +909,7 @@ xtags["my-select"] = xtag.register("my-select",{
 
             this.xtag.data.svalidated.dispatch(temp);
             xtag.fireEvent(this, 'validate', {detail: temp});
+            return temp;
         },
         onValidated: function (fn) {
             this.xtag.data.svalidated.add(fn,this);
@@ -923,10 +918,6 @@ xtags["my-select"] = xtag.register("my-select",{
     accessors: {
         // attrname:{attribute:{}, get: function(val) {}, set: function(val) {}}
         dataString:{attribute:{}, },
-        dataType:{attribute:{}, get: function() {
-            var temp = this.getAttribute("data-type");
-            return temp? temp: "text";
-        }}
     },
     events: {
         "change": function(ev){
@@ -948,26 +939,28 @@ xtags["my-msg"] = xtag.register("my-msg",{
     methods: {
         init: function () {
             this.xtag.data.frag = [];
-        },
-        getChild: function (fn) {
-            fn = fn || function () {
+            this.xtag.data.generator = function () {
                 return document.createElement("div");
-            }
+            };
+        },
+        getChild: function () {
             var el = this.xtag.data.frag.shift();
-            if(!el) el = fn();
+            if(!el) el = this.xtag.data.generator();
             return el;
         },
         clearMsg: function () {
             elRemoveChildren(this,this.xtag.data.frag);
         },
-        printArray: function (arr,fn) {
-            fn = fn || function(a) {
-                var el = this.getChild();
-                el.innerHTML = a;
-                this.appendChild(el);
+        printArray: function (arr,fnRender) {
+            fnRender = fnRender || function (el,d) {
+                el.innerHTML = d;
             }
             this.clearMsg();
-            elsEach(arr,fn,this);
+            elsEach(arr,function(a) {
+                var el = this.getChild();
+                fnRender.call(this,el,a);
+                this.appendChild(el);
+            },this);
         }
     },
     accessors: {
@@ -1042,6 +1035,7 @@ xtag.register("my-msg-validate",{
 })
 // looping text
 xtag.register("my-msg-loop",{
+    prototype: xtags["my-msg"].prototype,
     lifecycle:{
         created: function () {
         },
@@ -1061,18 +1055,22 @@ xtag.register("my-msg-loop",{
     },
     methods: {
         init: function () {
-            this.xtag.data.looper;
-            this.showMsg = "hide"
+            this.xtag.data.looper = undefined;
         }
-        ,loopFn: function (interval,fn,fnContext) {
-            this.loopStop();
-            var args = [fn,interval,fnContext];
-            for(var i=3;i<arguments.length;i++) {
-                args.push(arguments[i]);
-            }
-            this.xtag.data.looper = setInterval.apply(undefined,args);
+        ,startLoop: function (interval,data,dataContext,render) {
+            interval = interval || 1000;
+            this.stopLoop();
+            this.xtag.data.looper = setInterval(
+                function(myContext,data,dataContext,render){
+                    myContext.printArray.call(myContext
+                        ,data.call(dataContext)
+                        ,render
+                    );
+                }
+                ,interval,this,data,dataContext,render
+            );
         }
-        ,loopStop: function () {
+        ,stopLoop: function () {
             if(this.xtag.data.looper) {
                 clearInterval(this.xtag.data.looper);
                 this.xtag.data.looper = undefined;
@@ -1082,56 +1080,6 @@ xtag.register("my-msg-loop",{
     accessors: {
         // attrname:{attribute:{}, get: function(val) {}, set: function(val) {}}
         showMsg:{attribute:{} }
-    },
-    events: {
-    }
-})
-
-// ajax handlers
-xtag.register("my-handler",{
-    lifecycle:{
-        created: function () {},
-        inserted: function () {},
-        removed: function () {},
-        attributeChanged: function (attr,old,next) {}
-    },
-    methods: {
-        getDefinition: function () {
-            var result = {type:"", handler:undefined, fnName:"", fn:"" }
-
-            var filtered = elsFilter(this.attributes, function(attr) {
-                return new RegExp("^params|type").test(attr.nodeName);
-            });
-
-            for(var i=0;i<filtered.length;i++) {
-                var n = filtered[i].nodeName;
-                var v = filtered[i].nodeValue;
-
-                n = n.split("-");
-                var n0 = n.shift();
-                var n1 = camelCase(n);
-
-                if(n0=="type") { result[n0] = v; }
-                else if(n0==="params"){ result[n1]=v; } 
-            }
-
-            if(result.fnName.length>0) {
-                result.handler = window[result.fnName];
-
-            } else if(result.fn.length>0) {
-                result.handler = new Function ("return "+result.fn)();
-            }
-            return this.isValidResult(result)? result: undefined;
-        },
-        isValidResult: function (obj) {
-            var validTypes = ["ready","connected","responded","processing","success","error"];
-
-            return obj.hasOwnProperty("type") && validTypes.indexOf(obj.type)>-1 
-                && obj.hasOwnProperty("handler") && xtag.typeOf(obj.handler)=="function";
-        }
-    },
-    accessors: {
-        // attrname:{attribute:{}, get: function(val) {}, set: function(val) {}}
     },
     events: {
     }
@@ -1147,79 +1095,57 @@ xtag.register("my-ajax",{
     },
     methods: {
         init: function () {
+            this.xtag.data.msgtxt = { };
+            this.xtag.data.msgtxt["ready"     ] = function () { return "Connecting"; }
+            this.xtag.data.msgtxt["connected" ] = function () { return "Connected" ; }
+            this.xtag.data.msgtxt["responded" ] = function () { return this.method=="GET"? "Getting"    : this.method=="POST"?"Posting" :"Sending"; }
+            this.xtag.data.msgtxt["processing"] = function () { return this.method=="GET"? "Loading"    : this.method=="POST"?"Saving"  :"Loading"; }
+            this.xtag.data.msgtxt["success"   ] = function () { return this.method=="GET"? "Data loaded": this.method=="POST"?"Saved"   :"Success"; }
+            this.xtag.data.msgtxt["error"     ] = function () { return "Error"     ; }
+            this.xtag.data.dots = "";
+            this.xtag.data.maxLen = 9;
+
             this.xtag.data.msgloop = document.createElement("MY-MSG-LOOP");
             this.appendChild(this.xtag.data.msgloop);
         },
-        getHandlerByTag: function () {
-            var baseHandler = baseHandler || {};
-            baseHandler["ready"      ] = baseHandler.hasOwnProperty("ready"      )? baseHandler["ready"      ]: function (xhttp) {console.log(0,"ready")                    }
-            baseHandler["connected"  ] = baseHandler.hasOwnProperty("connected"  )? baseHandler["connected"  ]: function (xhttp) {console.log(1,"connecting remote server") }
-            baseHandler["responded"  ] = baseHandler.hasOwnProperty("responded"  )? baseHandler["responded"  ]: function (xhttp) {console.log(2,"remote server responded")  }
-            baseHandler["processing" ] = baseHandler.hasOwnProperty("processing" )? baseHandler["processing" ]: function (xhttp) {console.log(3,"remote server processing") }
-            baseHandler["success"    ] = baseHandler.hasOwnProperty("success"    )? baseHandler["success"    ]: function (xhttp) {console.log(4,xhttp.status,"success",xhttp.responseText)}
-            baseHandler["error"      ] = baseHandler.hasOwnProperty("error"      )? baseHandler["error"      ]: function (xhttp) {console.log(4,xhttp.status,"error")}
-
-            var handlerEls = this.getElementsByTagName("MY-HANDLER");
-
-            elsEach(handlerEls,function(el){
-                var temp = el.getDefinition();
-                if(temp!==undefined && baseHandler.hasOwnProperty(temp.type)) {
-                    baseHandler[temp.type] = temp.handler;
-                }
-            })
-
-            return baseHandler;
-        },
-        composeHandlerWithMsg: function (obj,method) {
-            var composer = function(k,fn,fnContext) {
-                var msgtxt = { };
-                msgtxt["ready"     ] = "Connecting";
-                msgtxt["connected" ] = "Connected" ;
-                msgtxt["responded" ] = (method=="GET"? "Getting"    : method=="POST"?"Posting" :"Sending");
-                msgtxt["processing"] = (method=="GET"? "Loading"    : method=="POST"?"Saving"  :"Loading");
-                msgtxt["success"   ] = (method=="GET"? "Data loaded": method=="POST"?"Saved"   :"Success");
-                msgtxt["error"     ] = "Error"     ;
-
-                var msgRoller = function(msgEl,msgText,forceRewrite) {
-                    forceRewrite = forceRewrite || false;
-                    var max=10;
-                    if (forceRewrite || msgEl.textContent.length == 0 || msgEl.textContent.length >= (msgText.length+max)) {
-                        msgEl.textContent = msgText;
-                    } else {
-                        msgEl.textContent = msgEl.textContent+"."
+        composeHandlerWithMsg: function (handler) {
+            var newHandler = {};
+            for(var k in handler) {
+                newHandler[k] = (function (key,val,tagContext) {
+                    return function () {
+                        val.apply(tagContext,arguments);
+                        tagContext.xtag.data.dots = "";
+                        if(k=="success" || k=="error") {
+                            tagContext.xtag.data.msgloop.stopLoop();
+                            tagContext.xtag.data.msgloop.printArray([tagContext.xtag.data.msgtxt[k]()]);
+                        } else {
+                            tagContext.xtag.data.msgloop.startLoop(1000
+                                ,function(){
+                                    if(tagContext.xtag.data.dots.length>tagContext.xtag.data.maxLen) {
+                                        tagContext.xtag.data.dots = "";
+                                    }
+                                    tagContext.xtag.data.dots = tagContext.xtag.data.dots + ".";
+                                    return [tagContext.xtag.data.msgtxt[key]()+tagContext.xtag.data.dots];
+                                }
+                                ,tagContext
+                            )
+                        }
                     }
-                }
-
-                return function () {
-                    var args = elsMap(arguments,function(el){
-                        return el;
-                    })
-                    fn.apply(fnContext,args);
-                    if(k=="success" || k=="error") {
-                        fnContext.xtag.data.msgloop.loopStop();
-                        msgRoller(fnContext.xtag.data.msgloop,msgtxt[k],true);
-                    } else {
-                        fnContext.xtag.data.msgloop.loopFn(1000,msgRoller,fnContext.xtag.data.msgloop,msgtxt[k]);
-                    }
-                }
+                })(k,handler[k],this)
             }
-
-            for(var k in obj) {
-                obj[k] = composer(k,obj[k],this);
-            }
-            return obj;
+            return newHandler;
         },
         fire: function (data,success,error,ready,connected,responded,processing) {
-            var handler = this.getHandlerByTag();
+            var handler = {};
             if(ready     ) handler["ready"      ] = ready     ;
             if(connected ) handler["connected"  ] = connected ;
             if(responded ) handler["responded"  ] = responded ;
             if(processing) handler["processing" ] = processing;
             if(success   ) handler["success"    ] = success   ;
             if(error     ) handler["error"      ] = error     ;
-            handler = this.composeHandlerWithMsg( handler,this.method );
+            console.log(this.composeHandlerWithMsg(handler))
 
-            return ajax({method: this.method, action: this.action,params: data || {} },handler);
+            return ajax({method:this.method, action:this.action, params:data||{} }, this.composeHandlerWithMsg(handler) );
         }
     },
     accessors: {
@@ -1237,7 +1163,6 @@ xtag.register("my-ajax",{
     events: {
     }
 })
-
 
 
 

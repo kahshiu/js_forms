@@ -213,6 +213,21 @@ function setValuesByForm(values,formEl,fnFilter) {
     }
     return temp;
 }   
+function validateByForm(formEl,fnFilter) {
+    var isCustomInput = function (el) {
+        var tags = ["my-select","my-textbox","my-checkbox-radio"]
+        return tags.indexOf( el.getAttribute("is") )>-1;
+    }
+    var isFinalValid=true, temp, inputs=elFilterInputs(formEl);
+    for(var i=0;i<inputs.length;i++) {
+        if( isCustomInput(inputs[i]) ) {
+            temp = inputs[i].validate();
+            isFinalValid = isFinalValid&&temp.isValid;
+        }
+        if(!isFinalValid) break;
+    }
+    return isFinalValid;
+}
 // ### formatting object
 function Formatter (source) {
     this.source = undefined; 
