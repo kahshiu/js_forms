@@ -372,9 +372,9 @@ Calendar.prototype.setup = function (dt,weekstartday) {
     this.setData();
 }
 Calendar.prototype.dateSet = function (yyyy,mm,dd) {
-    if(yyyy) this.date.setFullYear (yyyy);
-    if(mm  ) this.date.setMonth    (mm);
-    if(dd  ) this.date.setDate     (dd);
+    if(dd  !==undefined) this.date.setDate(dd);
+    if(mm  !==undefined) this.date.setMonth(mm);
+    if(yyyy!==undefined) this.date.setFullYear(yyyy);
     this.setData();
 }
 Calendar.prototype.dateGet = function () {
@@ -479,27 +479,170 @@ function Scroller () {
         this.items.push(arguments[i]);
     }
 }
-Scroller.prototype.scroll = function () {
-    var count = this.items.length/2;
-    this.currPos++;
-    if(this.currPos>=count) {
-        this.currPos=0;
+Scroller.prototype.push     = function (addition)  { this.items.push(addition); }
+Scroller.prototype.unshift  = function (addition)  { this.items.unshift(addition); }
+Scroller.prototype.setPos   = function (pos)       { this.currPos = pos; }
+Scroller.prototype.getItem  = function ()          { return this.items[this.currPos]; }
+Scroller.prototype.scroll   = function (direction) {
+    direction = direction? direction: 1;
+    this.currPos = this.currPos + (direction<0? -1: 1);
+    var loopback = 0;
+    var len = this.items.length;
+
+    if(this.currPos>=len) {
+        this.currPos = 0;
+        loopback = 1;
+
+    } else if(this.currPos<0) {
+        this.currPos = len-1;
+        loopback = -1
+    }
+    return loopback;
+}
+
+function CalendarManager () {
+    this.scroller = new Scroller();
+    this.maxItems = 10;
+}
+CalendarManager.prototype.add = function () {
+    var toAdd = this.scroller.items.length<this.maxItems;
+    if(toAdd) {
+        this.scroller.push(document.createElement("MY-CALENDAR"));
+    }
+    return toAdd;
+}
+CalendarManager.prototype.hide = function (targetCal) {
+    //hide elements except pinned calendars
+    var hiddenEls = [];
+    var hiddenIdx = [];
+    for(var i=0;i<this.scroller.items.length;i++) {
+        var item = this.scroller.items[i];
+        var isTarget = (targetCal && targetCal===item) || (!targetCal);
+        if( isTarget && item.pinned=="0") {
+            hiddenEls.push(item);
+            hiddenIdx.push(i);
+
+            //clear bindings
+            var input = item.getAugmentedInput();
+            if(input) {
+                input.unbindCalendar();
+                item.unbindInput();
+            }
+        }
+    }
+    return {els:hiddenEls, index:hiddenIdx};
+}
+CalendarManager.prototype.getNext = function () {
+    var ready, index, hidden = this.hide();
+    ready = hidden.index.length>0;
+    index = hidden.index[0];
+    if(!ready) {
+        ready = this.add();
+        index = this.scroller.items.length-1;
+    }
+    if(!ready) return undefined;
+
+    this.scroller.setPos(index);
+    return this.scroller.getItem();
+}
+CalendarManager.prototype.isAugmented = function (el) {
+    var elP = elGetParent(el,{tagName:"MY-CALENDAR"});
+    var c = this.scroller.getItem();
+    return c && (el===c || elP===c || el===c.getAugmentedInput());
+}
+CalendarManager.prototype.augmentEl = function (el) {
+    var existingCal = el.getCalendar();
+    if(existingCal) {
+        this.zIndexSorting(existingCal);
+        return undefined;
+    }
+    var cal = this.getNext();
+    if(!cal) return undefined;
+    cal.bindInput(el);
+    el.bindCalendar(cal);
+    this.zIndexSorting(cal);
+}
+CalendarManager.prototype.zIndexSorting = function (target) {
+    // zIndex reserved: 900-999
+    for(var i=0;i<this.scroller.items.length;i++) {
+        var item = this.scroller.items[i];
+        if (item===target) {
+            item.style.zIndex = 999;
+
+        } else if( item.pinned==="1" ) {
+            item.style.zIndex = item.style.zIndex-1;
+        }
+        if(item.style.zIndex<900) {
+            //todo: proper handling of index pushed out of reserved range
+        }
     }
 }
-Scroller.prototype.getValue = function () {
-    var keyPos = this.currPos*2;
-    var valuePos = (this.currPos*2)+1;
-    return {key:this.items[keyPos], val:this.items[valuePos]}; 
-}
-xtags["my-calendar"] = xtag.register("my-calendar",{
-    content:'<div class="indicator"> <input type="button" value="&laquo;"> <div> <span class="yyyy"> </span> <span class="mm"> </span> </div> <div class="scrollkey"> </div> <div class="scrollval"> </div> <input type="button" value="&raquo;"> </div> <table> <thead> <tr is="my-data-tr"> </tr> </thead> <tbody is="my-data-tbody"> </tbody> </table>',
+// TODO: keyboard manager to the whole body
+xtags["my-manager"] = xtag.register("my-manager",{
+    extends:"body",
     lifecycle:{
         created: function () { 
             this.init();
         },
         inserted: function () { },
         removed: function () { },
-        attributeChanged: function (attr,old,next) {},
+        attributeChanged: function (attr,old,next) { 
+        }
+    },
+    methods: {
+        init: function () {
+            this.xtag.data.calman = new CalendarManager();
+        },
+        getManager: function (type) {
+            var m;
+            if(type==="calendar") m=this.xtag.data.calman;
+            return m;
+        }
+    },
+    accessors: {
+        // attrname:{attribute:{}, get: function(val) {}, set: function(val) {}}
+    },
+    events: {
+        "focus": function (ev) {
+            var t = ev.target;
+            if( elIs(t,{tagName:"INPUT",type:"text",dataType:"date"}) ){
+                this.xtag.data.calman.augmentEl(t);
+                // only augment those without calendar
+            }
+        },
+        "blur": function(ev){
+        },
+        "click": function(ev){
+            var t = ev.target;
+            if(!this.xtag.data.calman.isAugmented(t)) {
+                this.xtag.data.calman.hide(
+                    this.xtag.data.calman.scroller.getItem()
+                );
+            }
+        }
+		//,
+        //"keydown": debounce(function(){
+        //},500)
+    }
+})
+
+xtags["my-calendar"] = xtag.register("my-calendar",{
+    content:'<div class="indicator"> <div class="button">&#x1f4cc;</div> <div class="mid"> <span class="scrollkey"> </span> <span class="scrollval"> </span> </div> <div class="button"> </div> </div> <div class="indicator"> <input type="button" class="button" value="&laquo;"> <div class="mid"> <span class="mm"> </span> <span class="yyyy"> </span> </div> <input type="button" class="button" value="&raquo;"> </div> <table> <thead> <tr is="my-data-tr"> </tr> </thead> <tbody is="my-data-tbody"> </tbody> </table>',
+    lifecycle:{
+        created: function () { 
+            this.init();
+        },
+        inserted: function () { },
+        removed: function () { },
+        attributeChanged: function (attr,old,next) { 
+            if(attr=="pinned" && next=="0") {
+                var input = this.getAugmentedInput();
+                if(input) {
+                    this.getAugmentedInput().unbindCalendar();
+                    this.unbindInput();
+                }
+            }
+        },
     },
     methods: {
         init: function () {
@@ -507,8 +650,8 @@ xtags["my-calendar"] = xtag.register("my-calendar",{
             this.xtag.data.dtnow = new Date();
             this.xtag.data.dtnow.setHours(0,0,0,0);
             this.xtag.data.scroller = new Scroller(
-                 "today"   ,function(){ return this.xtag.data.dtnow; }
-                ,"selected",function(){ return this.xtag.data.dtselected; } 
+                 { key:"today"   ,val: function(){ return this.xtag.data.dtnow; }}
+                ,{ key:"selected",val: function(){ return this.xtag.data.dtselected; }} 
             );
 
             this.xtag.data.cal = new Calendar(new Date(2018,6,30));
@@ -536,6 +679,7 @@ xtags["my-calendar"] = xtag.register("my-calendar",{
                             td.textContent = Number(td.getData().dd);
                         }
                     )
+                    tr.className="dates"
                     tr.renderData(data);
                 }
             })(this)
@@ -550,12 +694,14 @@ xtags["my-calendar"] = xtag.register("my-calendar",{
             var divs = this.getElementsByTagName("div");
             this.xtag.data.elPrev     = inputs[0];
             this.xtag.data.elNext     = inputs[1];
-            this.xtag.data.elDayType  = divs[2];
-            this.xtag.data.elDayValue = divs[3];
-            this.xtag.data.elmm       = spans[0]
-            this.xtag.data.elyyyy     = spans[1]
-            this.xtag.data.elSelected = divs[3];
+            this.xtag.data.elPin      = divs[1];
+            this.xtag.data.elDayType  = spans[0];
+            this.xtag.data.elDayValue = spans[1];
+            this.xtag.data.elmm       = spans[2];
+            this.xtag.data.elyyyy     = spans[3];
 
+            this.xtag.data.augmentedEl = undefined;
+            this.pinned = "0";
             this.render();
             this.renderScroller();
         },
@@ -570,41 +716,37 @@ xtags["my-calendar"] = xtag.register("my-calendar",{
             return result;
         },
         setSelectedDate: function (yyyy,mm,dd) {
-            if(yyyy && mm && dd) {
+            if( yyyy===undefined && mm===undefined && dd===undefined ){
+                this.xtag.data.dtselected = undefined;
+
+            } else {
                 if(!this.xtag.data.dtselected){
                     this.xtag.data.dtselected = new Date();
                 }
-                if(yyyy) this.xtag.data.dtselected.setFullYear(yyyy);
-                if(mm)   this.xtag.data.dtselected.setMonth(mm);
-                if(dd)   this.xtag.data.dtselected.setDate(dd);
+                if(dd  !==undefined) this.xtag.data.dtselected.setDate(dd);
+                if(mm  !==undefined) this.xtag.data.dtselected.setMonth(mm);
+                if(yyyy!==undefined) this.xtag.data.dtselected.setFullYear(yyyy);
                 this.xtag.data.dtselected.setHours(0,0,0,0);
-
-            } else {
-                this.xtag.data.dtselected = undefined;
             }
         },
         render: function (yyyy,mm,dd) {
             this.renderData(yyyy,mm,dd);
-            this.renderText();
+            this.renderMMYYYY();
             this.layerStyles();
         },
         renderData: function (yyyy,mm,dd) {
-            if(yyyy || mm || dd) {
+            if( yyyy!==undefined || mm!==undefined || dd!==undefined ) {
                 this.xtag.data.cal.dateSet(yyyy,mm,dd);
             }
             this.xtag.data.skin.renderData(this.xtag.data.cal.getData());
         },
-        renderText: function () {
+        renderMMYYYY: function () {
             var d = this.xtag.data.cal;
-            if(this.xtag.data.dtselected) {
-                this.xtag.data.elSelected.textContent = dateFormat(this.xtag.data.dtselected);
-            }
             this.xtag.data.elmm.textContent = d.getStrMonth()
             this.xtag.data.elyyyy.textContent = d.getStrYear()
-
         },
         renderScroller: function () {
-            var curr = this.xtag.data.scroller.getValue(); 
+            var curr = this.xtag.data.scroller.getItem(); 
             var dt = curr.val.call(this);
             this.xtag.data.elDayType.textContent = curr.key.toUpperCase();
             this.xtag.data.elDayValue.textContent = dt? dateFormat(dt): "";
@@ -627,11 +769,10 @@ xtags["my-calendar"] = xtag.register("my-calendar",{
 
                 tds = trs[i].children;
                 for(var j=0;j<tds.length;j++) {
-
                     currdata = tds[j].getData();
-                    dt1.setFullYear (currdata.yyyy);
-                    dt1.setMonth    (currdata.mm  );
                     dt1.setDate     (currdata.dd  );
+                    dt1.setMonth    (currdata.mm  );
+                    dt1.setFullYear (currdata.yyyy);
                     classes = 
                          (toStyleSelected.call(this,dt1)===0? "selected ": "")
                          +(toStyleToday.call(this,dt1)===0? "today ": "")
@@ -640,37 +781,60 @@ xtags["my-calendar"] = xtag.register("my-calendar",{
                      tds[j].className = classes;
                 }
             }
+        },
+        synchInput: function () {
+            var input = this.getAugmentedInput();
+            if(input){
+                input.setValue(dateFormat(this.xtag.data.dtselected));
+            }
+        },
+        getAugmentedInput: function () {
+            return this.xtag.data.augmentedEl;
+        },
+        bindInput: function (el) {
+            this.xtag.data.augmentedEl = el;
+        },
+        unbindInput: function () {
+            this.xtag.data.augmentedEl = undefined;
         }
     },
     accessors: {
         // attrname:{attribute:{}, get: function(val) {}, set: function(val) {}}
+        pinned:{attribute:{}, }
     },
     events: {
         "click": function (ev) {
+            console.log("hit")
             var t = ev.target;
             var tc = ev.currentTarget;
 
-            if( t===this.xtag.data.elPrev      )     { this.xtag.data.cal.dateAdd("mm",-1);this.render(); }
+            if( t===this.xtag.data.elPin ) {
+                this.pinned = (this.pinned=="0"? "1": "0"); 
+            }
+            else if( t===this.xtag.data.elPrev )     { this.xtag.data.cal.dateAdd("mm",-1);this.render(); }
             else if( t===this.xtag.data.elNext )     { this.xtag.data.cal.dateAdd("mm",1);this.render(); }
             else if( t===this.xtag.data.elDayType )  { 
                 this.xtag.data.scroller.scroll(); 
                 this.renderScroller();
 
             } else if( t===this.xtag.data.elDayValue ) { 
-                var dt = this.xtag.data.scroller.getValue().val.call(this); 
-                var yyyy = dt.getFullYear(); 
-                var mm   = dt.getMonth();    
+                var dt = this.xtag.data.scroller.getItem().val.call(this); 
                 var dd   = dt.getDate();      
+                var mm   = dt.getMonth();    
+                var yyyy = dt.getFullYear(); 
                 this.render(yyyy,mm,dd);
 
             } else if( t.tagName==="TD") {
                 var d = t.getData();
-                if(elHasClassName(t,"selected")) {
-                    this.setSelectedDate();
-                    elRemoveClassName(t,"selected");
-                } else {
-                    this.setSelectedDate(d.yyyy,d.mm,d.dd);
-                    elAppendClassName(t,"selected");
+                if(elHasClassName(t.parentElement,"dates")){
+                    if(elHasClassName(t,"selected")) {
+                        this.setSelectedDate();
+                        elRemoveClassName(t,"selected");
+                    } else {
+                        this.setSelectedDate(d.yyyy,d.mm,d.dd);
+                        elAppendClassName(t,"selected");
+                    }
+                    this.synchInput();
                 }
                 this.render();
                 this.renderScroller();
@@ -697,10 +861,11 @@ xtags["my-textbox"] = xtag.register("my-textbox",{
     methods: {
         init: function () {
             this.type = "text";
-            this.xtag.data.warningEl = undefined;
+            this.xtag.data.warningEl  = undefined;
             this.xtag.data.svalidated = new signals.Signal();
             this.xtag.data.validation = undefined;
-            this.xtag.data.converted = undefined;
+            this.xtag.data.calendar   = undefined;
+            this.xtag.data.converted  = undefined;
         },
         setValue: function(source,datatype) {
             if(source.constructor !== String) source = this.value;
@@ -756,7 +921,41 @@ xtags["my-textbox"] = xtag.register("my-textbox",{
         onValidated: function (fn) {
             this.xtag.data.svalidated.add(fn,this);
         },
+        getCalendar: function (c) {
+            return this.xtag.data.calendar
+        },
+        synchCalendar: function () {
+            if(this.dataType==="date") {
+                var dtselected = this.getValue();
+                var dt   = dtselected || new Date();
+                var dd   = dt.getDate();      
+                var mm   = dt.getMonth();    
+                var yyyy = dt.getFullYear(); 
 
+                if(dtselected) {
+                    this.xtag.data.calendar.setSelectedDate( yyyy,mm,dd );
+                } else {
+                    this.xtag.data.calendar.setSelectedDate();
+                }
+                this.xtag.data.calendar.render(yyyy,mm,dd);
+                this.xtag.data.calendar.renderScroller();
+            }
+        },
+        bindCalendar: function (c) {
+            this.xtag.data.calendar = c;
+
+            this.synchCalendar();
+            var rec  = this.getBoundingClientRect();
+            c.style.marginTop  = rec.height + 2;
+            c.style.marginLeft = 0
+
+            elRemoveClassName(c,"hide");
+            this.parentElement.insertBefore(c,this);
+        }
+        ,unbindCalendar: function () {
+            elAppendClassName(this.xtag.data.calendar,"hide");
+            this.xtag.data.calendar = undefined;
+        }
     },
     accessors: {
         // attrname:{attribute:{}, get: function(val) {}, set: function(val) {}}
@@ -775,12 +974,14 @@ xtags["my-textbox"] = xtag.register("my-textbox",{
                 el.validate();
             } else {
                 el.setValue(el.value);
+                el.synchCalendar();
             }
         },
         "keydown": debounce(function(){
             var ev = this;
             var el = ev.target;
             el.setValue(el.value);
+            el.synchCalendar();
         },500)
     }
 })

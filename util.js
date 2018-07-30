@@ -386,14 +386,14 @@ function elIndex(el,breakCondition) {
 function elGetParent(el,specs) {
     var temp = null;
     if(el) {
-    while( el.parentElement!==null 
-        && el.parentElement!==document.body
-    ){
-        if( elIs(el.parentElement,specs) ) {
-            temp = el.parentElement;
+        while( el.parentElement!==null 
+            && el.parentElement!==document.body
+        ){
+            if( elIs(el.parentElement,specs) ) {
+                temp = el.parentElement;
+            }
+            el = el.parentElement;
         }
-        el = el.parentElement;
-    }
     }
     return temp;
 }

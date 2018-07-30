@@ -2,11 +2,12 @@
     <head>
         <link rel="stylesheet" href="elements.css">
         <script src="util.js"></script>
+        <script src="signals.min.js"></script>
         <script src="forms.js"></script>
         <script src="core.js"></script>
         <script src="elements.js"></script>
     </head>
-    <body>
+    <body is="my-manager" id="m">
         <div id="mm">
             <input type="button" name="ss" value="modal1" target="m1">
             <input type="button" name="ss" value="modal2" target="m2">
@@ -37,6 +38,36 @@ document.getElementById("mm").onclick=function(ev){
     }
 }
         </script>
+
+        <hr>
+        <!---
+        <my-calendar id="c11"> </my-calendar>
+        <input type="text" is="my-textbox" data-type="date"  id="fdate" name="fdate">
+            --->
+
+        <hr>
+            <input type="text" is="my-textbox" data-type="date"  id="fdate2" name="fdate">
+            <input type="text" is="my-textbox" data-type="date"  id="fdate3" name="fdate">
+            <input type="text" is="my-textbox" data-type="date"  id="fdate4" name="fdate">
+            <input type="text" is="my-textbox" data-type="date"  id="fdate5" name="fdate">
+        <script>
+var fdate = document.getElementsByName("fdate");
+var m = document.getElementById("m");
+fdate[0].onfocus=function(){console.log(m.getManager("calendar").scroller.items.length)}
+fdate[1].onfocus=function(){console.log(m.getManager("calendar").scroller.items.length)}
+fdate[2].onfocus=function(){console.log(m.getManager("calendar").scroller.items.length)}
+fdate[3].onfocus=function(){console.log(m.getManager("calendar").scroller.items.length)}
+        </script>
+            <!---
+            --->
+
+        <!---
+        <hr>
+            <input type="text" is="my-textbox" data-type="date"  id="fdate12" name="fdate12">
+            <br> <input type="text" is="my-textbox" data-type="date"  id="fdate13" name="fdate13">
+            <br> <input type="text" is="my-textbox" data-type="date"  id="fdate14" name="fdate14">
+            <br> <input type="text" is="my-textbox" data-type="date"  id="fdate15" name="fdate15">
+        --->
 
         <hr>
         <table>
@@ -175,9 +206,5 @@ jax.fire({}
     ,function(x){console.log("error",x)}
 )
         </script>
-        <hr>
-        <my-calendar>
-        </my-calendar>
-
     </body>
 </html>
