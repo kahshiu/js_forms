@@ -954,8 +954,8 @@ xtags["my-textbox"] = xtag.register("my-textbox",{
 
             this.synchCalendar();
             var rec  = this.getBoundingClientRect();
-            c.style.marginTop  = rec.height + 2;
-            c.style.marginLeft = 0
+            c.style.marginTop  = rec.height+4+"px";
+            c.style.marginLeft = 0+"px";
 
             elRemoveClassName(c,"hide");
             this.parentElement.insertBefore(c,this);

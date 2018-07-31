@@ -1,10 +1,13 @@
+<!DOCTYPE html>
 <html>
     <head>
+        <meta charset="UTF-8">
+        <title>Example 2</title>
         <link rel="stylesheet" href="elements.css">
         <script src="util.js"></script>
         <script src="signals.min.js"></script>
         <script src="forms.js"></script>
-        <script src="core.js"></script>
+        <script src="x-tag-core.min.js"></script>
         <script src="elements.js"></script>
     </head>
     <body is="my-manager" id="m">
@@ -182,18 +185,18 @@ fdate[3].onfocus=function(){console.log(m.getManager("calendar").scroller.items.
 var items = [];
 var count = 0;
 
-//var loop = document.getElementById("loop");
-//loop.startLoop(
-//    1000
-//    ,function(){
-//        items.push(count++);
-//        if(count>20) {
-//            this.stopLoop();
-//        }
-//        return items;
-//    }
-//    ,loop
-//)
+var loop = document.getElementById("loop");
+loop.startLoop(
+    1000
+    ,function(){
+        items.push(count++);
+        if(count>20) {
+            this.stopLoop();
+        }
+        return items;
+    }
+    ,loop
+)
         </script>
 
         <hr>
