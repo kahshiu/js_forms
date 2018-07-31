@@ -144,21 +144,19 @@ function objectifyString(str,delimKVal,delimPair) {
     return result;
 }
 // fires once after sufficiently long inactivity. usage: rate limiting keyboard events
-function debounce(func, wait, immediate) {
+function debounce(fncontext,func,wait,immediate) {
 	var timeout;
-	return function(context) {
-		var args = [];
-        for(var i=1;i<arguments.length;i++) {
-            args.push(arguments[i])
-        }
+	return function() {
+        var args = arguments;
 		clearTimeout(timeout);
 		timeout = setTimeout(function() {
 			timeout = null;
-			if (!immediate) func.apply(context, args);
+			if (!immediate) func.apply(fncontext,args);
 		}, wait);
-		if (immediate && !timeout) func.apply(context, args);
+		if (immediate && !timeout) func.apply(fncontext,args);
 	};
 }
+
 // simplified ajax call
 function ajax(config,handler,timeout) {
     config = config || {};

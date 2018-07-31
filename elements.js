@@ -507,7 +507,7 @@ function CalendarManager () {
 CalendarManager.prototype.add = function () {
     var toAdd = this.scroller.items.length<this.maxItems;
     if(toAdd) {
-        this.scroller.push(document.createElement("MY-CALENDAR"));
+        this.scroller.push( document.createElement("MY-CALENDAR") );
     }
     return toAdd;
 }
@@ -607,7 +607,6 @@ xtags["my-manager"] = xtag.register("my-manager",{
             var t = ev.target;
             if( elIs(t,{tagName:"INPUT",type:"text",dataType:"date"}) ){
                 this.xtag.data.calman.augmentEl(t);
-                // only augment those without calendar
             }
         },
         "blur": function(ev){
@@ -785,7 +784,12 @@ xtags["my-calendar"] = xtag.register("my-calendar",{
         synchInput: function () {
             var input = this.getAugmentedInput();
             if(input){
-                input.setValue(dateFormat(this.xtag.data.dtselected));
+                var dt = this.xtag.data.dtselected;
+                if(!dt) {
+                    input.setValue("");
+                } else {
+                    input.setValue(dateFormat(dt));
+                }
             }
         },
         getAugmentedInput: function () {
@@ -866,6 +870,10 @@ xtags["my-textbox"] = xtag.register("my-textbox",{
             this.xtag.data.validation = undefined;
             this.xtag.data.calendar   = undefined;
             this.xtag.data.converted  = undefined;
+
+            if( this.value.length>0 ) {
+                this.setValue(this.value); 
+            }
         },
         setValue: function(source,datatype) {
             if(source.constructor !== String) source = this.value;
@@ -937,8 +945,8 @@ xtags["my-textbox"] = xtag.register("my-textbox",{
                 } else {
                     this.xtag.data.calendar.setSelectedDate();
                 }
-                this.xtag.data.calendar.render(yyyy,mm,dd);
                 this.xtag.data.calendar.renderScroller();
+                this.xtag.data.calendar.render(yyyy,mm,dd);
             }
         },
         bindCalendar: function (c) {
@@ -956,6 +964,11 @@ xtags["my-textbox"] = xtag.register("my-textbox",{
             elAppendClassName(this.xtag.data.calendar,"hide");
             this.xtag.data.calendar = undefined;
         }
+        ,highlightContent: function () {
+            if(this.dataType=="date") {
+                this.select();
+            }
+        }
     },
     accessors: {
         // attrname:{attribute:{}, get: function(val) {}, set: function(val) {}}
@@ -968,21 +981,24 @@ xtags["my-textbox"] = xtag.register("my-textbox",{
         }}
     },
     events: {
+        "focus": function(ev){
+            this.highlightContent();
+        },
         "blur": function(ev){
             var el = ev.target;
             if( el.hasAttribute("data-valid") ) {
                 el.validate();
             } else {
                 el.setValue(el.value);
-                el.synchCalendar();
             }
-        },
-        "keydown": debounce(function(){
-            var ev = this;
-            var el = ev.target;
-            el.setValue(el.value);
             el.synchCalendar();
-        },500)
+        },
+        "keydown": debounce(this,function(ev){
+            var el = ev.target;    
+            el.setValue(el.value); 
+            el.synchCalendar();    
+            el.highlightContent();   
+        },800)
     }
 })
 xtags["my-checkbox-radio"] = xtag.register("my-checkbox-radio",{
