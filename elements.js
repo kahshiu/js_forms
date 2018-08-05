@@ -224,9 +224,10 @@ xtags["my-data-tbody"] = xtag.register("my-data-tbody",{
     extends:"tbody",
     lifecycle:{
         created: function () { 
-            this.init();
         },
-        inserted: function () { },
+        inserted: function () { 
+            this.init();
+			},
         removed: function () { },
         attributeChanged: function (attr,old,next) { }
     },
@@ -297,16 +298,56 @@ xtags["my-data-table"] = xtag.register("my-data-table",{
     content:"<thead><tr is='my-data-tr'></tr></thead><tbody is='my-data-tbody'></tbody>",
     lifecycle:{
         created: function () { 
-            this.init();
+			this.xtag = {}
+			this.xtag.data = {}
         },
-        inserted: function () { },
+        inserted: function () {
+				console.log(this);
+			function tester(node) {
+				window.setTimeout(function() {
+					if(node.xtagComponentReady){
+						console.log("success");
+						node.init();
+						var tb3 = document.getElementById("tb3");
+							tb3.bodyPipeline(
+								undefined
+								,undefined
+								,function(tr,data,index,list){
+									tr.setPipeline(
+										undefined
+										,undefined
+										,function(td,data,index,list){
+											td.textContent = "ss|" + data;
+										}
+									);
+									tr.renderData(data);
+								}
+							);
+							tb3.renderData({
+								 COLUMNS:["col1","col2","col3","col4"]
+								,DATA:[
+								  ["test","something","within","row"]
+								 ,["test2","something2","within2","row2"]
+								 ,["test3","something3","within3","row3"]
+								]
+							});
+					}
+					else {
+						//console.log(node);
+						tester(node);
+					}
+				}, 1500);
+			}
+			tester(this.getElementsByTagName("TBODY")[0]);
+            //this.init();
+		},
         removed: function () { },
         attributeChanged: function (attr,old,next) {},
     },
     methods: {
         init: function () {
             this.xtag.data.source = undefined;
-            this.xtag.data.tbody = this.getElementsByTagName("TBODY")[0];
+            this.xtag.data.tbody = this.getElementsByTagName("tbody")[0];
             this.xtag.data.thead = this.getElementsByTagName("THEAD")[0].firstElementChild;
             this.xtag.data.thead.setPipeline(
                 function(td,data,index,list){
